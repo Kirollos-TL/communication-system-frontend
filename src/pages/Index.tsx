@@ -2,10 +2,7 @@ import ChatWidget from "@/features/chat/ChatWidget";
 
 const Index = () => {
   return (
-    <div className="min-h-screen relative">
-      {/* Beige section below */}
-      <div className="bg-secondary min-h-[40vh]" />
-
+    <div className="min-h-screen bg-cortex-cream">
       <ChatWidget />
     </div>
   );
