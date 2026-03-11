@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, MoreVertical } from "lucide-react";
-import { CHAT_CONFIG } from "./config";
+import { CHAT_CONFIG } from "@/config/app-config";
 import VectorIcon from "../../assets/Vector.svg";
 
 interface Message {
@@ -15,9 +15,10 @@ interface ChatConversationProps {
   onBack: () => void;
   onClose: () => void;
   initialMessage?: string;
+  initialAnswer?: string;
 }
 
-export const ChatConversation = ({ onBack, onClose, initialMessage }: ChatConversationProps) => {
+export const ChatConversation = ({ onBack, onClose, initialMessage, initialAnswer }: ChatConversationProps) => {
   const { user, assistant, style } = CHAT_CONFIG;
   
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -30,13 +31,14 @@ export const ChatConversation = ({ onBack, onClose, initialMessage }: ChatConver
       });
       initial.push({
         id: "2",
-        text: initialMessage.match(/[\u0600-\u06FF]/) ? assistant.arabicResponse : assistant.defaultResponse,
+        text: initialAnswer || (initialMessage.match(/[\u0600-\u06FF]/) ? assistant.arabicResponse : assistant.defaultResponse),
         sender: "other",
         name: assistant.name,
       });
     }
     return initial;
   });
+
   const [input, setInput] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);

@@ -1,19 +1,45 @@
-import { X } from "lucide-react";
-import { CHAT_CONFIG } from "./config";
+import { X, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CHAT_CONFIG, Faq } from "@/config/app-config";
 import HelloIcon from "../../assets/hello.svg";
+import { useApi } from "@/hooks/use-api";
+
 
 interface ChatWelcomeProps {
+  role: "dev" | "user";
   onClose: () => void;
-  onOptionSelect: (option: string) => void;
+  onOptionSelect: (faq: Faq | string) => void;
   onChatWithUs: () => void;
   onFollowRequest: () => void;
 }
 
-export const ChatWelcome = ({ onClose, onOptionSelect, onChatWithUs, onFollowRequest }: ChatWelcomeProps) => {
-  const { style, quickReplies, animations } = CHAT_CONFIG;
+
+export const ChatWelcome = ({ role, onClose, onOptionSelect, onChatWithUs, onFollowRequest }: ChatWelcomeProps) => {
+  const { style } = CHAT_CONFIG;
+
+  const { get } = useApi();
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        setLoading(true);
+        // Fetching list of FAQs
+        const data = await get<Faq[]>("faqs");
+        setFaqs(data || []);
+      } catch (error) {
+        console.error("Failed to fetch FAQs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFaqs();
+  }, [get]);
+
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background overflow-hidden">
       {/* Gradient Header */}
       <div 
         className="relative bg-cortex-header-gradient px-6 pt-6 sm:pt-8 pb-8 sm:pb-10 overflow-hidden shrink-0"
@@ -38,21 +64,29 @@ export const ChatWelcome = ({ onClose, onOptionSelect, onChatWithUs, onFollowReq
         <p className="text-sm text-muted-foreground mb-3 sm:mb-4 shrink-0">Please select an option below</p>
         
         <div 
-          className="flex flex-col gap-2.5 sm:gap-3 items-center w-full px-1 overflow-y-auto shrink-0 pb-1"
-          style={{ 
-            maxHeight: `calc((${style.quickReplyHeight} * 3) + 24px)` 
-          }}
+          className="flex-1 flex flex-col gap-2.5 sm:gap-3 items-center w-full px-1 overflow-y-auto pb-1 custom-scrollbar"
         >
-          {quickReplies.map((option) => (
-            <button
-              key={option}
-              onClick={() => onOptionSelect(option)}
-              className={`w-full max-w-[368px] shrink-0 rounded-[12px] bg-cortex-cream text-cortex-black text-base font-medium hover:brightness-95 transition-all flex items-center justify-center text-center px-4`}
-              style={{ height: style.quickReplyHeight }}
-            >
-              {option}
-            </button>
-          ))}
+          {loading ? (
+
+
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-muted-foreground">
+              <Loader2 className="w-8 h-8 animate-spin text-cortex-amber" />
+              <p className="text-sm font-medium">Getting latest updates...</p>
+            </div>
+          ) : faqs.length > 0 ? (
+            faqs.map((faq) => (
+              <button
+                key={faq.id}
+                onClick={() => onOptionSelect(faq)}
+
+                className={`w-full max-w-[368px] shrink-0 rounded-[12px] bg-cortex-cream text-cortex-black text-[15px] font-medium hover:brightness-95 transition-all flex items-center justify-center text-center px-4 py-3 min-h-[58px] shadow-sm`}
+              >
+                {faq.question}
+              </button>
+            ))
+          ) : (
+            <p className="text-center text-muted-foreground py-6">No options available at the moment.</p>
+          )}
         </div>
 
         <div className="mt-auto pt-3 sm:pt-4 shrink-0 flex flex-col gap-2.5 sm:gap-3">
@@ -60,16 +94,18 @@ export const ChatWelcome = ({ onClose, onOptionSelect, onChatWithUs, onFollowReq
             onClick={onFollowRequest}
             className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-cortex-button-gradient text-white text-[17px] sm:text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.98]"
           >
-            Follow previous request
+            {CHAT_CONFIG.content.welcome.followBtn}
           </button>
           <button
             onClick={onChatWithUs}
             className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-cortex-button-gradient text-white text-[17px] sm:text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.98]"
           >
-            Chat with us
+            {CHAT_CONFIG.content.welcome.chatBtn}
           </button>
+
         </div>
       </div>
     </div>
   );
 };
+

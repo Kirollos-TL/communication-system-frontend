@@ -1,0 +1,149 @@
+import { X, Upload, Check } from "lucide-react";
+import { useState } from "react";
+import { CHAT_CONFIG } from "@/config/app-config";
+
+interface CreateChangeRequestProps {
+  onClose: () => void;
+  onCancel: () => void;
+  onSubmit: (data: { tags: string[]; details: string }) => void;
+}
+
+const MODIFICATION_TAGS = [
+  "Frontend", "Backend Logic", "Database", "Integration", 
+  "API Modification", "Bug Fix", "Performance Improvement", 
+  "Security Update", "Add New Feature", "Custom Business Logic"
+];
+
+export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChangeRequestProps) => {
+  const { style, colors } = CHAT_CONFIG;
+  const { detailsModal } = style;
+  
+  const [selectedTags, setSelectedTags] = useState<string[]>(["Frontend", "Backend Logic", "Integration", "Add New Feature"]);
+  const [details, setDetails] = useState("");
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-300">
+      <div 
+        className="bg-white w-full shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 text-left"
+        style={{ 
+          maxWidth: `min(${detailsModal.width}, calc(100vw - 24px))`, 
+          maxHeight: `min(${detailsModal.height}, calc(100vh - 24px))`,
+          borderRadius: detailsModal.borderRadius 
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 sm:px-8 py-4 sm:py-6 border-b shrink-0" style={{ borderColor: colors.border }}>
+          <h2 className="text-[20px] sm:text-[28px] font-medium truncate pr-4" style={{ color: colors.primaryText }}>
+            Create Change Request
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full opacity-60 hover:opacity-100 transition-all shadow-sm"
+            style={{ color: colors.primaryText }}
+          >
+            <X className="w-6 h-6 sm:w-8 sm:h-8 font-light" strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 sm:px-8 py-5 sm:py-6 space-y-6 sm:space-y-8 min-h-0 custom-scrollbar">
+          {/* Modification Tags */}
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[17px] sm:text-[20px] font-medium" style={{ color: colors.primaryText }}>
+                What would you like to modify?
+              </h3>
+              <button className="text-[15px] sm:text-[17px] font-medium opacity-50 hover:opacity-100 transition-opacity" style={{ color: colors.primaryText }}>
+                See all
+              </button>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 sm:gap-2.5">
+              {MODIFICATION_TAGS.map((tag) => {
+                const isSelected = selectedTags.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    onClick={() => toggleTag(tag)}
+                    className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[13px] sm:text-[15px] font-medium transition-all ${
+                      isSelected 
+                        ? "shadow-sm" 
+                        : "bg-cortex-bg-gray/10 opacity-70 border border-transparent"
+                    }`}
+                    style={{ 
+                      backgroundColor: isSelected ? colors.cream : "#E2E8F0",
+                      color: colors.primaryText,
+                      border: isSelected ? `1.5px solid ${colors.tan}` : "1.5px solid transparent"
+                    }}
+                  >
+                    {isSelected && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={3} />}
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Change Details */}
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-[17px] sm:text-[20px] font-medium" style={{ color: colors.primaryText }}>
+              Change Details
+            </h3>
+            <textarea
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              placeholder="Explain the changes you would like to make..."
+              className="w-full h-32 sm:h-40 rounded-2xl p-4 sm:p-6 outline-none resize-none text-[15px] sm:text-[16px] font-medium placeholder:opacity-50"
+              style={{ backgroundColor: colors.bgGray, color: colors.primaryText }}
+            />
+          </div>
+
+          {/* Upload files */}
+          <div className="space-y-3 sm:space-y-4 pb-2">
+            <h3 className="text-[17px] sm:text-[20px] font-medium flex items-center gap-2" style={{ color: colors.primaryText }}>
+              <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
+              Upload files
+            </h3>
+            <div className="border-2 border-dashed rounded-[20px] sm:rounded-[24px] p-6 sm:p-10 flex flex-col items-center justify-center gap-3 sm:gap-4 border-slate-200" style={{ borderColor: colors.border }}>
+              <button className="flex items-center gap-2 bg-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] font-bold text-[16px] sm:text-[18px] hover:bg-slate-50 transition-all border border-slate-100" style={{ color: colors.primaryText }}>
+                <Upload className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
+                Upload files
+              </button>
+              <div className="text-center">
+                <p className="text-[15px] sm:text-[18px] font-semibold" style={{ color: colors.primaryText }}>
+                  Chose a file or drag & drop it here
+                </p>
+                <p className="text-[12px] sm:text-[14px] font-medium opacity-50" style={{ color: colors.primaryText }}>
+                  Maximum 500 MB file size
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="px-5 sm:px-8 py-4 sm:py-6 border-t grid grid-cols-2 gap-3 sm:gap-6 shrink-0" style={{ borderColor: colors.border }}>
+          <button
+            onClick={onCancel}
+            className="w-full py-3 sm:py-4 rounded-xl font-bold text-[16px] sm:text-[20px] hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
+            style={{ backgroundColor: colors.bgGray, color: '#2B3D55' }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onSubmit({ tags: selectedTags, details })}
+            className="w-full py-3 sm:py-4 rounded-xl bg-cortex-button-gradient text-white text-[16px] sm:text-[20px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
+          >
+            Submit Request
+          </button>
+        </div>
+      </div>
+    </div>
+
+  );
+};

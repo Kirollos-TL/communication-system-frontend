@@ -1,5 +1,5 @@
 import { X, ArrowLeft } from "lucide-react";
-import { CHAT_CONFIG } from "./config";
+import { CHAT_CONFIG } from "@/config/app-config";
 
 interface ChatFollowUpProps {
   onClose: () => void;

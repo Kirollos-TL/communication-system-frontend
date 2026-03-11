@@ -1,5 +1,6 @@
-import { X, Paperclip, FileText, Image as ImageIcon, Upload } from "lucide-react";
-import { CHAT_CONFIG } from "./config";
+import { X, FileText, Image as ImageIcon, Upload } from "lucide-react";
+
+import { CHAT_CONFIG } from "@/config/app-config";
 
 interface ChangeRequestDetailsProps {
   requestId: string;
