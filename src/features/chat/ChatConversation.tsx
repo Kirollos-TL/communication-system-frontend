@@ -2,11 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, MoreVertical } from "lucide-react";
 import { CHAT_CONFIG } from "@/config/app-config";
 import VectorIcon from "../../assets/Vector.svg";
+import { chatService, UserMessage } from "@/services/chat-service";
 
 interface Message {
   id: string;
   text: string;
-  sender: "user" | "other";
+  sender: "user" | "other" | string;
   avatar?: string;
   name?: string;
 }
@@ -14,12 +15,16 @@ interface Message {
 interface ChatConversationProps {
   onBack: () => void;
   onClose: () => void;
+  onHistoryClick: () => void;
   initialMessage?: string;
   initialAnswer?: string;
+  chatId?: string;
 }
 
-export const ChatConversation = ({ onBack, onClose, initialMessage, initialAnswer }: ChatConversationProps) => {
+export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessage, initialAnswer, chatId }: ChatConversationProps) => {
   const { user, assistant, style } = CHAT_CONFIG;
+  const [isLoading, setIsLoading] = useState(false);
+  const [chatTitle, setChatTitle] = useState<string | null>(null);
   
   const [messages, setMessages] = useState<Message[]>(() => {
     const initial: Message[] = [];
@@ -44,16 +49,73 @@ export const ChatConversation = ({ onBack, onClose, initialMessage, initialAnswe
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (chatId) {
+      const fetchHistory = async () => {
+        setIsLoading(true);
+        try {
+          // Fetch messages
+          const history = await chatService.getUserMessages(user.id, chatId);
+          
+          // Fetch chat details for the title
+          try {
+            const chatDetails = await chatService.getChat(user.id, chatId);
+            setChatTitle(chatDetails.title);
+          } catch (e) {
+            console.warn("Could not fetch chat title:", e);
+          }
+
+          if (history.length === 0) {
+            // New chat session - persist initial messages if they exist
+            if (initialMessage) {
+              await chatService.sendMessage(user.id, chatId, initialMessage, 'user');
+              if (initialAnswer) {
+                await chatService.sendMessage(user.id, chatId, initialAnswer, 'chatbot');
+              }
+            }
+          } else {
+            const mappedMessages: Message[] = history.map((m) => ({
+              id: m.message_id,
+              text: m.message,
+              sender: m.sender === "user" ? "user" : "other",
+              name: m.sender === "user" ? user.name : assistant.name,
+            }));
+            setMessages(mappedMessages);
+          }
+        } catch (error) {
+          console.error("Failed to sync chat state:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchHistory();
+    }
+  }, [chatId, user.id, assistant.name, user.name, initialMessage, initialAnswer]);
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
+    
+    const text = input.trim();
+    setInput("");
+
+    // Add locally for instant feedback
+    const tempId = Date.now().toString();
     setMessages((prev) => [
       ...prev,
-      { id: Date.now().toString(), text: input.trim(), sender: "user" },
+      { id: tempId, text: text, sender: "user" },
     ]);
-    setInput("");
+
+    if (chatId) {
+      try {
+        await chatService.sendMessage(user.id, chatId, text);
+      } catch (error) {
+        console.error("Failed to send message to backend:", error);
+        // Optional: show error state for the message
+      }
+    }
   };
 
   const menuOptions = ["Conversation history", "Change category", "Close chat"];
@@ -75,7 +137,16 @@ export const ChatConversation = ({ onBack, onClose, initialMessage, initialAnswe
         <button onClick={onBack} className="text-white hover:bg-white/10 transition-colors rounded-full p-1.5">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h3 className="flex-1 text-[18px] font-semibold text-white">Hi {user.name}!</h3>
+        <div className="flex-1 min-w-0 text-left">
+          <h3 className="text-[18px] font-semibold text-white truncate">
+            {chatTitle || `Hi ${user.name}!`}
+          </h3>
+          {chatTitle && (
+            <p className="text-[12px] text-white/80 truncate -mt-0.5 font-medium opacity-90">
+              Support Conversation
+            </p>
+          )}
+        </div>
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="text-white hover:bg-white/10 transition-colors rounded-full p-1.5"
@@ -93,6 +164,8 @@ export const ChatConversation = ({ onBack, onClose, initialMessage, initialAnswe
                   setIsMenuOpen(false);
                   if (option === "Close chat") {
                     onClose();
+                  } else if (option === "Conversation history") {
+                    onHistoryClick();
                   }
                 }}
                 className="w-full text-left px-5 py-2.5 text-[15px] text-[#2C3E50] hover:bg-cortex-gray/10 transition-colors"
@@ -106,6 +179,11 @@ export const ChatConversation = ({ onBack, onClose, initialMessage, initialAnswe
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {isLoading && (
+          <div className="flex justify-center py-4">
+            <span className="text-sm text-muted-foreground animate-pulse">Loading messages...</span>
+          </div>
+        )}
         {messages.map((msg) => (
           <div key={msg.id} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
             {msg.name && (

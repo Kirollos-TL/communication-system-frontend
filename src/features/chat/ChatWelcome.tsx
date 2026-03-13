@@ -9,12 +9,13 @@ interface ChatWelcomeProps {
   role: "dev" | "user";
   onClose: () => void;
   onOptionSelect: (faq: Faq | string) => void;
+  onRequestChange: () => void;
   onChatWithUs: () => void;
   onFollowRequest: () => void;
 }
 
 
-export const ChatWelcome = ({ role, onClose, onOptionSelect, onChatWithUs, onFollowRequest }: ChatWelcomeProps) => {
+export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, onChatWithUs, onFollowRequest }: ChatWelcomeProps) => {
   const { style } = CHAT_CONFIG;
 
   const { get } = useApi();
@@ -61,7 +62,15 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onChatWithUs, onFol
 
       {/* Options */}
       <div className="flex-1 px-5 pt-4 sm:pt-5 pb-6 sm:pb-8 flex flex-col min-h-0">
-        <p className="text-sm text-muted-foreground mb-3 sm:mb-4 shrink-0">Please select an option below</p>
+        <div className="flex items-center justify-between mb-3 sm:mb-4 shrink-0">
+          <p className="text-sm text-muted-foreground">Please select an option below</p>
+          <button 
+            onClick={onRequestChange}
+            className="px-4 py-1.5 rounded-[10px] bg-cortex-button-gradient text-white text-[13px] font-medium transition-all shadow-sm active:scale-95 hover:brightness-110"
+          >
+            Request a change
+          </button>
+        </div>
         
         <div 
           className="flex-1 flex flex-col gap-2.5 sm:gap-3 items-center w-full px-1 overflow-y-auto pb-1 custom-scrollbar"

@@ -1,11 +1,11 @@
-import { X, Upload, Check } from "lucide-react";
-import { useState } from "react";
+import { X, Upload, Check, Trash2 } from "lucide-react";
+import { useState, useRef } from "react";
 import { CHAT_CONFIG } from "@/config/app-config";
 
 interface CreateChangeRequestProps {
   onClose: () => void;
   onCancel: () => void;
-  onSubmit: (data: { tags: string[]; details: string }) => void;
+  onSubmit: (data: { tags: string[]; details: string; files: File[] }) => void;
 }
 
 const MODIFICATION_TAGS = [
@@ -20,11 +20,28 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
   
   const [selectedTags, setSelectedTags] = useState<string[]>(["Frontend", "Backend Logic", "Integration", "Add New Feature"]);
   const [details, setDetails] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => 
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setSelectedFiles(prev => [...prev, ...filesArray]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const triggerUpload = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -38,8 +55,8 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 sm:px-8 py-4 sm:py-6 border-b shrink-0" style={{ borderColor: colors.border }}>
-          <h2 className="text-[20px] sm:text-[28px] font-medium truncate pr-4" style={{ color: colors.primaryText }}>
+        <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: colors.border }}>
+          <h2 className="text-[20px] sm:text-[24px] font-medium truncate pr-4" style={{ color: colors.primaryText }}>
             Create Change Request
           </h2>
           <button
@@ -47,11 +64,11 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
             className="p-1 rounded-full opacity-60 hover:opacity-100 transition-all shadow-sm"
             style={{ color: colors.primaryText }}
           >
-            <X className="w-6 h-6 sm:w-8 sm:h-8 font-light" strokeWidth={1.5} />
+            <X className="w-6 h-6 sm:w-7 sm:h-7 font-light" strokeWidth={1.5} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 sm:px-8 py-5 sm:py-6 space-y-6 sm:space-y-8 min-h-0 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 min-h-0 custom-scrollbar">
           {/* Modification Tags */}
           <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center justify-between">
@@ -73,11 +90,11 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
                     className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[13px] sm:text-[15px] font-medium transition-all ${
                       isSelected 
                         ? "shadow-sm" 
-                        : "bg-cortex-bg-gray/10 opacity-70 border border-transparent"
+                        : "border border-transparent"
                     }`}
                     style={{ 
-                      backgroundColor: isSelected ? colors.cream : "#E2E8F0",
-                      color: colors.primaryText,
+                      backgroundColor: isSelected ? colors.cream : colors.bgGray,
+                      color: isSelected ? colors.primaryText : colors.black,
                       border: isSelected ? `1.5px solid ${colors.tan}` : "1.5px solid transparent"
                     }}
                   >
@@ -98,8 +115,12 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               placeholder="Explain the changes you would like to make..."
-              className="w-full h-32 sm:h-40 rounded-2xl p-4 sm:p-6 outline-none resize-none text-[15px] sm:text-[16px] font-medium placeholder:opacity-50"
-              style={{ backgroundColor: colors.bgGray, color: colors.primaryText }}
+              className="w-full h-32 sm:h-40 rounded-2xl p-4 sm:p-6 outline-none resize-none text-[15px] sm:text-[16px] font-medium"
+              style={{ 
+                backgroundColor: colors.bgGray, 
+                color: colors.wordsGray,
+                caretColor: colors.primaryText 
+              }}
             />
           </div>
 
@@ -109,8 +130,22 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
               <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
               Upload files
             </h3>
-            <div className="border-2 border-dashed rounded-[20px] sm:rounded-[24px] p-6 sm:p-10 flex flex-col items-center justify-center gap-3 sm:gap-4 border-slate-200" style={{ borderColor: colors.border }}>
-              <button className="flex items-center gap-2 bg-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] font-bold text-[16px] sm:text-[18px] hover:bg-slate-50 transition-all border border-slate-100" style={{ color: colors.primaryText }}>
+            <div 
+              className="border-2 border-dashed rounded-[20px] sm:rounded-[24px] p-6 sm:p-10 flex flex-col items-center justify-center gap-3 sm:gap-4 border-slate-200" 
+              style={{ borderColor: colors.border }}
+            >
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                multiple
+              />
+              <button 
+                onClick={triggerUpload}
+                className="flex items-center gap-2 bg-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] font-bold text-[16px] sm:text-[18px] hover:bg-slate-50 transition-all border border-slate-100" 
+                style={{ color: colors.primaryText }}
+              >
                 <Upload className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
                 Upload files
               </button>
@@ -123,27 +158,49 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
                 </p>
               </div>
             </div>
+
+            {/* File List */}
+            {selectedFiles.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                {selectedFiles.map((file, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="flex items-center gap-3 truncate pr-2">
+                      <Check className="w-4 h-4 text-green-600 shrink-0" />
+                      <span className="text-sm font-medium truncate" style={{ color: colors.primaryText }}>
+                        {file.name}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => removeFile(idx)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Footer Buttons */}
-        <div className="px-5 sm:px-8 py-4 sm:py-6 border-t grid grid-cols-2 gap-3 sm:gap-6 shrink-0" style={{ borderColor: colors.border }}>
+        <div className="px-6 py-5 border-t grid grid-cols-2 gap-4 shrink-0" style={{ borderColor: colors.border }}>
           <button
             onClick={onCancel}
-            className="w-full py-3 sm:py-4 rounded-xl font-bold text-[16px] sm:text-[20px] hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
+            className="w-full py-3 rounded-xl font-bold text-[16px] sm:text-[18px] hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
             style={{ backgroundColor: colors.bgGray, color: '#2B3D55' }}
           >
             Cancel
           </button>
           <button
-            onClick={() => onSubmit({ tags: selectedTags, details })}
-            className="w-full py-3 sm:py-4 rounded-xl bg-cortex-button-gradient text-white text-[16px] sm:text-[20px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
+            onClick={() => onSubmit({ tags: selectedTags, details, files: selectedFiles })}
+            className="w-full py-3 rounded-xl bg-cortex-button-gradient text-white text-[16px] sm:text-[18px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
           >
             Submit Request
           </button>
         </div>
       </div>
     </div>
-
   );
 };
+

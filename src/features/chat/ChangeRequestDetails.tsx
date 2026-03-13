@@ -1,18 +1,37 @@
-import { X, FileText, Image as ImageIcon, Upload } from "lucide-react";
-
+import { X, FileText, Image as ImageIcon, Upload, Check, Trash2 } from "lucide-react";
+import { useState, useRef } from "react";
 import { CHAT_CONFIG } from "@/config/app-config";
 
 interface ChangeRequestDetailsProps {
   requestId: string;
   onClose: () => void;
   onCancel: () => void;
-  onSubmit: () => void;
+  onSubmit: (data: { reply: string; files: File[] }) => void;
 }
 
 export const ChangeRequestDetails = ({ requestId, onClose, onCancel, onSubmit }: ChangeRequestDetailsProps) => {
   const { changeRequests, style, colors, content } = CHAT_CONFIG;
   const request = changeRequests.find((r) => r.id === requestId) || changeRequests[0];
   const { detailsModal } = style;
+
+  const [reply, setReply] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setSelectedFiles(prev => [...prev, ...filesArray]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const triggerUpload = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-300">
@@ -38,7 +57,7 @@ export const ChangeRequestDetails = ({ requestId, onClose, onCancel, onSubmit }:
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8 min-h-0">
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8 min-h-0 custom-scrollbar">
           {/* Info */}
           <div className="space-y-0.5 text-left">
             <p className="text-[17px] font-semibold" style={{ color: colors.pureBlack }}>
@@ -110,9 +129,11 @@ export const ChangeRequestDetails = ({ requestId, onClose, onCancel, onSubmit }:
               {content.details.sections.reply}
             </h3>
             <textarea
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
               placeholder="Write your response or ask for more details..."
               className="w-full h-32 rounded-2xl p-5 outline-none resize-none"
-              style={{ backgroundColor: colors.bgGray, color: colors.primaryText }}
+              style={{ backgroundColor: colors.bgGray, color: colors.wordsGray }}
             />
           </div>
 
@@ -123,7 +144,18 @@ export const ChangeRequestDetails = ({ requestId, onClose, onCancel, onSubmit }:
               {content.details.sections.upload}
             </h3>
             <div className="border-2 border-dashed rounded-[24px] p-10 flex flex-col items-center justify-center gap-4" style={{ borderColor: colors.border }}>
-              <button className="flex items-center gap-2 bg-white px-8 py-3 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] font-semibold hover:bg-slate-50 transition-all border" style={{ color: colors.primaryText, borderColor: '#E2E8F0' }}>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                multiple
+              />
+              <button 
+                onClick={triggerUpload}
+                className="flex items-center gap-2 bg-white px-8 py-3 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] font-semibold hover:bg-slate-50 transition-all border" 
+                style={{ color: colors.primaryText, borderColor: '#E2E8F0' }}
+              >
                 <Upload className="w-5 h-5" />
                 {content.details.upload.btn}
               </button>
@@ -136,20 +168,42 @@ export const ChangeRequestDetails = ({ requestId, onClose, onCancel, onSubmit }:
                 </p>
               </div>
             </div>
+
+            {/* File List */}
+            {selectedFiles.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                {selectedFiles.map((file, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="flex items-center gap-3 truncate pr-2">
+                      <Check className="w-4 h-4 text-green-600 shrink-0" />
+                      <span className="text-sm font-medium truncate" style={{ color: colors.primaryText }}>
+                        {file.name}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => removeFile(idx)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Footer Buttons */}
-        <div className="p-6 border-t grid grid-cols-2 gap-4" style={{ borderColor: colors.border }}>
+        <div className="p-6 border-t grid grid-cols-2 gap-6" style={{ borderColor: colors.border }}>
           <button
             onClick={onCancel}
-            className="w-full py-3.5 rounded-xl font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
-            style={{ backgroundColor: colors.bgGray, color: '#334155' }}
+            className="w-full py-3.5 rounded-xl text-[18px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
+            style={{ backgroundColor: colors.bgGray, color: colors.primaryText }}
           >
             {content.details.actions.cancel}
           </button>
           <button
-            onClick={onSubmit}
+            onClick={() => onSubmit({ reply, files: selectedFiles })}
             className="w-full py-3.5 rounded-xl bg-cortex-button-gradient text-white text-[18px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
           >
             {content.details.actions.submit}

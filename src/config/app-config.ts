@@ -26,6 +26,12 @@ export interface UserChat {
   updated_at: string;
 }
 
+export interface PurchasedModule {
+  id: string;
+  name: string;
+  purchaseDate: string;
+}
+
 export interface UserMessage {
   user_id: number;
   chat_id: string;
@@ -130,6 +136,7 @@ export interface ChatConfig {
   animations: {
     entryTransition: string;
   };
+  purchasedModules: PurchasedModule[];
 }
 
 export interface AppConfig {
@@ -151,6 +158,8 @@ export const APP_CONFIG: AppConfig = {
       user_chats: "/user_chats/{user_id}",
       user_chat: "/user_chat/{user_id}/{chat_id}",
       user_messages: "/user_message/{user_id}/{chat_id}",
+      create_message: "/user_message",
+      create_user_chat: "/user_chat",
     },
 
     pageEndpoints: {
@@ -204,6 +213,7 @@ export const APP_CONFIG: AppConfig = {
       tan: "#F2DCB3",
       border: "#DEDEDE",
       bgGray: "#D9D9D9",
+      wordsGray: "#949791",
       successGreen: "#00642F",
       progressGold: "#9C6F46",
     },
@@ -288,43 +298,9 @@ export const APP_CONFIG: AppConfig = {
     ],
 
 
-    changeRequests: [
-      {
-        id: "1",
-        userName: "Ahmed Waleed",
-        module: "Inventory Management",
-        purchasedDate: "12 Mar 2025",
-        status: "In progress",
-        statusColor: "#9C6F46",
-        requestedChanges: "The client requested additional reporting features in the inventory module...",
-        attachments: [
-          { name: "requirements.pdf", size: "20 MB", type: "pdf" },
-          { name: "screenshot.png", size: "20 MB", type: "png" },
-        ]
-      },
-      {
-        id: "2",
-        userName: "Ahmed Waleed",
-        module: "Inventory Management",
-        purchasedDate: "12 Mar 2025",
-        status: "Completed",
-        statusColor: "#00642F",
-        requestedChanges: "Implemented custom export to excel functionality.",
-        attachments: [
-          { name: "final_report.pdf", size: "15 MB", type: "pdf" },
-        ]
-      },
-      {
-        id: "3",
-        userName: "Ahmed Waleed",
-        module: "Inventory Management",
-        purchasedDate: "12 Mar 2025",
-        status: "In progress",
-        statusColor: "#9C6F46",
-        requestedChanges: "Add support for multiple warehouses.",
-        attachments: []
-      },
-    ],
+    changeRequests: [],
+
+    purchasedModules: [],
 
     // Animation settings
     animations: {

@@ -1,72 +1,87 @@
-import { X, Paperclip } from "lucide-react";
+import { X, ArrowLeft, Settings2 } from "lucide-react";
 import { CHAT_CONFIG } from "@/config/app-config";
 
 interface RequestChangeModalProps {
   onClose: () => void;
   onCancel: () => void;
-  onSubmit: (url: string) => void;
+  onSubmit: (moduleId: string) => void;
+  onChatWithUs: () => void;
 }
 
-export const RequestChangeModal = ({ onClose, onCancel, onSubmit }: RequestChangeModalProps) => {
-  const { colors, content } = CHAT_CONFIG;
-  const { userRequestChange } = content;
+export const RequestChangeModal = ({ onClose, onCancel, onSubmit, onChatWithUs }: RequestChangeModalProps) => {
+  const { purchasedModules, colors, content } = CHAT_CONFIG;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-[620px] max-h-[min(600px,calc(100vh-32px))] rounded-[24px] shadow-2xl flex flex-col overflow-y-auto animate-in zoom-in-95 duration-300">
-        {/* Header */}
-        <div className="flex items-start justify-between px-8 pt-8 pb-5 text-left">
-          <div className="space-y-1.5">
-            <h2 className="text-[28px] font-medium leading-none" style={{ color: colors.primaryText }}>
-              {userRequestChange.title}
-            </h2>
-            <p className="text-[17px] font-normal leading-tight opacity-60" style={{ color: colors.primaryText }}>
-              {userRequestChange.subtitle}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full opacity-60 hover:opacity-100 transition-all"
-            style={{ color: colors.primaryText }}
-          >
-            <X className="w-8 h-8 font-thin" strokeWidth={1.5} />
-          </button>
-        </div>
+    <div className="flex flex-col h-full bg-background animate-in fade-in duration-300 relative">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pt-5 pb-2 shrink-0">
+        <button
+          onClick={onCancel}
+          className="p-1 rounded-full hover:bg-slate-100/50 transition-colors"
+          style={{ color: colors.mutedText }}
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onClose}
+          className="p-1 rounded-full hover:bg-slate-100/50 transition-colors"
+          style={{ color: colors.mutedText }}
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
-        <div className="px-8 py-3">
-          <div className="relative group flex items-center">
+      <div className="px-6 mt-2 mb-6 flex items-center justify-between text-left shrink-0">
+        <div className="space-y-0.5">
+          <h2 className="text-[22px] font-medium leading-none" style={{ color: colors.primaryText }}>
+            Request a change
+          </h2>
+          <p className="text-[14px] text-muted-foreground">
+            Please select one of your purchased modules
+          </p>
+        </div>
+      </div>
+
+      {/* Modules List */}
+      <div className="flex-1 px-5 pb-8 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col gap-4 items-center w-full px-1 overflow-y-auto pb-4 custom-scrollbar">
+          {purchasedModules.map((module) => (
             <div 
-              className="absolute left-4 top-1/2 -translate-y-1/2"
-              style={{ color: colors.primaryText }}
+              key={module.id}
+              className="w-full max-w-[368px] rounded-[12px] bg-cortex-gray px-5 py-4 flex flex-col gap-3 shadow-sm text-left border border-black/5"
             >
-              <Paperclip className="w-6 h-6 rotate-45" />
+              <div className="space-y-0 text-[15px] font-semibold" style={{ color: colors.pureBlack }}>
+                <p>
+                  <span style={{ color: colors.primaryText }}>Module: </span>
+                  {module.name}
+                </p>
+                <p>
+                  <span style={{ color: colors.primaryText }}>Purchase Date: </span>
+                  {module.purchaseDate}
+                </p>
+              </div>
+
+              <button
+                onClick={() => onSubmit(module.id)}
+                className="w-full py-2.5 rounded-[10px] text-base font-bold hover:brightness-95 transition-all shadow-sm"
+                style={{ backgroundColor: colors.cream, color: colors.black }}
+              >
+                Change Request
+              </button>
             </div>
-            <input 
-              type="text"
-              placeholder={userRequestChange.placeholder}
-              className="w-full pl-12 pr-4 py-4 rounded-[12px] outline-none text-[16px] transition-all font-medium"
-              style={{ backgroundColor: colors.cream, color: colors.primaryText }}
-            />
-          </div>
+          ))}
         </div>
 
-        {/* Footer Buttons */}
-        <div className="px-8 py-8 grid grid-cols-2 gap-5">
+        <div className="mt-auto pt-4 shrink-0 px-1 border-t border-slate-100">
           <button
-            onClick={onCancel}
-            className="w-full py-2 rounded-[12px] font-bold text-[18px] hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
-            style={{ backgroundColor: colors.bgGray, color: colors.primaryText }}
+            onClick={onChatWithUs}
+            className="w-full py-3.5 px-4 rounded-[14px] bg-cortex-button-gradient text-white text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.99]"
           >
-            {userRequestChange.actions.cancel}
-          </button>
-          <button
-            onClick={() => onSubmit("")}
-            className="w-full py-2 rounded-[12px] bg-cortex-button-gradient text-white text-[18px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
-          >
-            {userRequestChange.actions.continue}
+            Chat with us
           </button>
         </div>
       </div>
     </div>
   );
 };
+

@@ -7,8 +7,8 @@ import { ChangeRequestList } from "./ChangeRequestList";
 import { ChangeRequestDetails } from "./ChangeRequestDetails";
 import { CreateChangeRequest } from "./CreateChangeRequest";
 import { RequestChangeModal } from "./RequestChangeModal";
-
 import { CHAT_CONFIG, Faq } from "@/config/app-config";
+import { chatService } from "@/services/chat-service";
 
 export type ChatView = "closed" | "welcome" | "follow-up" | "change-requests" | "change-request-details" | "user-request-change" | "create-change-request" | "chat";
 
@@ -25,11 +25,20 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [selectedRequestId, setSelectedRequestId] = useState<string>("");
+  const [selectedChatId, setSelectedChatId] = useState<string | undefined>();
+  const [followUpMode, setFollowUpMode] = useState<"options" | "history">("options");
 
   const { layout, animations } = CHAT_CONFIG;
 
+  const handleChatSelect = (chatId: string) => {
+    setSelectedChatId(chatId);
+    setSelectedOption("");
+    setSelectedAnswer("");
+    setView("chat");
+  };
 
-  const handleOptionSelect = (option: string | Faq) => {
+
+  const handleOptionSelect = async (option: string | Faq) => {
     const questionText = typeof option === "string" ? option : option.question;
     const lowerText = questionText.toLowerCase();
     const isRequestChange = lowerText.includes("request a change");
@@ -40,13 +49,11 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
       return;
     }
 
-    if (isRequestChange) {
-      if (role === "dev") {
-        setView("change-requests");
-      } else {
-        setView("user-request-change");
-      }
-      return;
+    try {
+      const newChat = await chatService.createChat(CHAT_CONFIG.user.id, questionText);
+      setSelectedChatId(newChat.chat_id);
+    } catch (error) {
+      console.error("Failed to create chat for FAQ:", error);
     }
 
     if (typeof option === "string") {
@@ -63,14 +70,31 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
 
 
 
-  const handleChatWithUs = () => {
+  const handleRequestChange = () => {
+    if (role === "dev") {
+      setView("change-requests");
+    } else {
+      setView("user-request-change");
+    }
+  };
+
+
+  const handleChatWithUs = async () => {
     setSelectedOption("");
     setSelectedAnswer("");
+    try {
+      const newChat = await chatService.createChat(CHAT_CONFIG.user.id, "General Support");
+      setSelectedChatId(newChat.chat_id);
+    } catch (error) {
+       console.error("Failed to create chat session:", error);
+       // We still show the chat view even if backend fail, it will just be local-only
+    }
     setView("chat");
   };
 
 
   const handleFollowRequest = () => {
+    setFollowUpMode("options");
     setView("follow-up");
   };
 
@@ -97,6 +121,7 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
               role={role}
               onClose={() => setView("closed")}
               onOptionSelect={handleOptionSelect}
+              onRequestChange={handleRequestChange}
               onChatWithUs={handleChatWithUs}
               onFollowRequest={handleFollowRequest}
             />
@@ -107,7 +132,9 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
               onClose={() => setView("closed")}
               onBack={() => setView("welcome")}
               onOptionSelect={handleOptionSelect}
+              onChatSelect={handleChatSelect}
               onChatWithUs={handleChatWithUs}
+              mode={followUpMode}
             />
           )}
           {view === "change-requests" && (
@@ -124,57 +151,63 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
           )}
           {view === "chat" && (
             <ChatConversation
-              onBack={() => setView("welcome")}
+              onBack={() => {
+                setView("welcome");
+                setSelectedChatId(undefined);
+              }}
               onClose={() => setView("closed")}
+              onHistoryClick={() => {
+                setSelectedChatId(undefined);
+                setFollowUpMode("history");
+                setView("follow-up");
+              }}
               initialMessage={selectedOption}
               initialAnswer={selectedAnswer}
+              chatId={selectedChatId}
             />
           )}
-
+          {view === "user-request-change" && (
+            <RequestChangeModal
+              onClose={() => setView("closed")}
+              onCancel={() => setView("welcome")}
+              onSubmit={(moduleId) => {
+                console.log("Selected module:", moduleId);
+                setView("create-change-request");
+              }}
+              onChatWithUs={handleChatWithUs}
+            />
+          )}
+          {view === "change-request-details" && (
+            <ChangeRequestDetails
+              requestId={selectedRequestId}
+              onClose={() => setView("closed")}
+              onCancel={() => {
+                if (role === "user") setView("user-request-change");
+                else setView("change-requests");
+              }}
+              onSubmit={() => {
+                setSelectedOption(`I'm submitting changes for request #${selectedRequestId}`);
+                setView("chat");
+              }}
+            />
+          )}
+          {view === "create-change-request" && (
+            <CreateChangeRequest
+              onClose={() => setView("closed")}
+              onCancel={() => setView("welcome")}
+              onSubmit={(data) => {
+                console.log("Creating request:", data);
+                setSelectedOption(`I'd like to request changes: ${data.tags.join(", ")}`);
+                setSelectedAnswer("Request received! Our team will review your details and get back to you shortly.");
+                setView("chat");
+              }}
+            />
+          )}
         </div>
       )}
 
-      {view === "change-request-details" && (
-        <ChangeRequestDetails
-          requestId={selectedRequestId}
-          onClose={() => setView("closed")}
-          onCancel={() => {
-            if (role === "user") setView("user-request-change");
-            else setView("change-requests");
-          }}
-          onSubmit={() => {
-            setSelectedOption(`I'm submitting changes for request #${selectedRequestId}`);
-            setView("chat");
-          }}
-        />
-      )}
 
-      {view === "user-request-change" && (
-        <RequestChangeModal
-          onClose={() => setView("closed")}
-          onCancel={() => setView("welcome")}
-          onSubmit={(url) => {
-            setView("create-change-request");
-          }}
-        />
-      )}
-
-      {view === "create-change-request" && (
-        <CreateChangeRequest
-          onClose={() => setView("closed")}
-          onCancel={() => setView("welcome")}
-
-          onSubmit={(data) => {
-            console.log("Creating request:", data);
-            setSelectedOption(`I'd like to request changes: ${data.tags.join(", ")}`);
-            setSelectedAnswer("Request received! Our team will review your details and get back to you shortly.");
-            setView("chat");
-          }}
-        />
-      )}
-
-
-      {(view === "closed" || view === "change-request-details" || view === "user-request-change" || view === "create-change-request") && (
+      {view === "closed" && (
 
         <button
           onClick={() => setView("welcome")}
