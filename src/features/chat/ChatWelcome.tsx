@@ -1,9 +1,9 @@
 import { X, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CHAT_CONFIG, Faq } from "@/config/app-config";
+import { Faq } from "@/config/app-config";
 import HelloIcon from "../../assets/hello.svg";
 import { useApi } from "@/hooks/use-api";
-
+import { useChat } from "./context/ChatContext";
 
 interface ChatWelcomeProps {
   role: "dev" | "user";
@@ -14,9 +14,9 @@ interface ChatWelcomeProps {
   onFollowRequest: () => void;
 }
 
-
 export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, onChatWithUs, onFollowRequest }: ChatWelcomeProps) => {
-  const { style } = CHAT_CONFIG;
+  const { config } = useChat();
+  const { style, content } = config;
 
   const { get } = useApi();
   const [faqs, setFaqs] = useState<Faq[]>([]);
@@ -26,7 +26,6 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
     const fetchFaqs = async () => {
       try {
         setLoading(true);
-        // Fetching list of FAQs
         const data = await get<Faq[]>("faqs");
         setFaqs(data || []);
       } catch (error) {
@@ -43,8 +42,8 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
     <div className="flex flex-col h-full bg-background overflow-hidden">
       {/* Gradient Header */}
       <div 
-        className="relative bg-cortex-header-gradient px-6 pt-6 sm:pt-8 pb-8 sm:pb-10 overflow-hidden shrink-0"
-        style={{ height: `min(${style.headerHeight}, 25vh)`, minHeight: "130px" }}
+        className="relative px-6 pt-6 sm:pt-8 pb-8 sm:pb-10 overflow-hidden shrink-0"
+        style={{ height: `min(${style.headerHeight}, 25vh)`, minHeight: "130px", background: style.gradients.header }}
       >
         <button
           onClick={onClose}
@@ -53,10 +52,10 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
           <X className="w-4 h-4" />
         </button>
         <h2 className="text-[22px] sm:text-[24px] font-medium text-white mt-3 sm:mt-5 flex items-center gap-2">
-          Hi There! <img src={HelloIcon} alt="Hello" className="w-5 h-5 opacity-90" />
+          {content.welcome.title} <img src={HelloIcon} alt="Hello" className="w-5 h-5 opacity-90" />
         </h2>
         <h3 className="text-[22px] sm:text-[24px] font-semibold text-cortex-cream leading-tight">
-          How can we help?
+          {content.welcome.subtitle}
         </h3>
       </div>
 
@@ -64,7 +63,7 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
       <div className="flex-1 px-5 pt-4 sm:pt-5 pb-6 sm:pb-8 flex flex-col min-h-0">
         <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4 shrink-0 px-1">
           <p className="text-[14px] sm:text-[16px] text-muted-foreground truncate flex-1">
-            Please select an option below
+            {content.welcome.optionPrompt}
           </p>
           <button 
             onClick={onRequestChange}
@@ -78,8 +77,6 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
           className="flex-1 flex flex-col gap-2.5 sm:gap-3 items-center w-full px-1 overflow-y-auto pb-1 custom-scrollbar"
         >
           {loading ? (
-
-
             <div className="flex flex-col items-center justify-center py-10 gap-3 text-muted-foreground">
               <Loader2 className="w-8 h-8 animate-spin text-cortex-amber" />
               <p className="text-sm font-medium">Getting latest updates...</p>
@@ -89,7 +86,6 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
               <button
                 key={faq.id}
                 onClick={() => onOptionSelect(faq)}
-
                 className={`w-full max-w-[368px] shrink-0 rounded-[12px] bg-cortex-cream text-cortex-black text-[15px] font-medium hover:brightness-95 transition-all flex items-center justify-center text-center px-4 py-3 min-h-[58px] shadow-sm`}
               >
                 {faq.question}
@@ -103,15 +99,17 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
         <div className="mt-auto pt-3 sm:pt-4 shrink-0 flex flex-col gap-2.5 sm:gap-3">
           <button
             onClick={onFollowRequest}
-            className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-cortex-button-gradient text-white text-[17px] sm:text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.98]"
+            className="w-full py-3 sm:py-3.5 px-4 rounded-xl text-white text-[17px] sm:text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.98]"
+            style={{ background: style.gradients.button }}
           >
-            {CHAT_CONFIG.content.welcome.followBtn}
+            {content.welcome.followBtn}
           </button>
           <button
             onClick={onChatWithUs}
-            className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-cortex-button-gradient text-white text-[17px] sm:text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.98]"
+            className="w-full py-3 sm:py-3.5 px-4 rounded-xl text-white text-[17px] sm:text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.98]"
+            style={{ background: style.gradients.button }}
           >
-            {CHAT_CONFIG.content.welcome.chatBtn}
+            {content.welcome.chatBtn}
           </button>
 
         </div>
@@ -119,4 +117,5 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
     </div>
   );
 };
+
 

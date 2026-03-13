@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, MoreVertical } from "lucide-react";
-import { CHAT_CONFIG } from "@/config/app-config";
 import VectorIcon from "../../assets/Vector.svg";
-import { chatService, UserMessage } from "@/services/chat-service";
+import { useChat } from "./context/ChatContext";
 
 interface Message {
   id: string;
@@ -22,7 +21,8 @@ interface ChatConversationProps {
 }
 
 export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessage, initialAnswer, chatId }: ChatConversationProps) => {
-  const { user, assistant, style } = CHAT_CONFIG;
+  const { config, chatService } = useChat();
+  const { user, assistant, style, colors } = config;
   const [isLoading, setIsLoading] = useState(false);
   const [chatTitle, setChatTitle] = useState<string | null>(null);
   
@@ -53,10 +53,8 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
       const fetchHistory = async () => {
         setIsLoading(true);
         try {
-          // Fetch messages
           const history = await chatService.getUserMessages(user.id, chatId);
           
-          // Fetch chat details for the title
           try {
             const chatDetails = await chatService.getChat(user.id, chatId);
             setChatTitle(chatDetails.title);
@@ -65,7 +63,6 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
           }
 
           if (history.length === 0) {
-            // New chat session - persist initial messages if they exist
             if (initialMessage) {
               await chatService.sendMessage(user.id, chatId, initialMessage, 'user');
               if (initialAnswer) {
@@ -89,7 +86,7 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
       };
       fetchHistory();
     }
-  }, [chatId, user.id, assistant.name, user.name, initialMessage, initialAnswer]);
+  }, [chatId, user.id, assistant.name, user.name, initialMessage, initialAnswer, chatService]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -101,7 +98,6 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
     const text = input.trim();
     setInput("");
 
-    // Add locally for instant feedback
     const tempId = Date.now().toString();
     setMessages((prev) => [
       ...prev,
@@ -113,12 +109,12 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
         await chatService.sendMessage(user.id, chatId, text);
       } catch (error) {
         console.error("Failed to send message to backend:", error);
-        // Optional: show error state for the message
       }
     }
   };
 
-  const menuOptions = ["Conversation history", "Change category", "Close chat"];
+
+  const menuOptions = ["Conversation history", "Close chat"];
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -131,8 +127,8 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
     <div className="flex flex-col h-full bg-background font-sans">
       {/* Header */}
       <div 
-        className="relative flex items-center gap-3 px-4 py-3 bg-cortex-header-gradient"
-        style={{ height: style.chatHeaderHeight }}
+        className="relative flex items-center gap-3 px-4 py-3"
+        style={{ height: style.chatHeaderHeight, background: style.gradients.header }}
       >
         <button onClick={onBack} className="text-white hover:bg-white/10 transition-colors rounded-full p-1.5">
           <ArrowLeft className="w-5 h-5" />
@@ -186,7 +182,7 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
         )}
         {messages.map((msg) => (
           <div key={msg.id} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
-            {msg.name && (
+            {msg.sender !== "user" && msg.name && (
               <div className="flex items-center gap-2 mb-1.5 ml-1">
                 <div className="w-6 h-6 rounded-full bg-cortex-amber/20 flex items-center justify-center text-[10px] font-bold text-cortex-amber">
                   {msg.name[0]}
@@ -197,12 +193,17 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
             <div
               className={`max-w-[80%] px-4 py-3 text-sm leading-relaxed shadow-sm ${
                 msg.sender === "user"
-                  ? "bg-cortex-gray text-cortex-black rounded-2xl rounded-tr-none"
-                  : "bg-cortex-cream text-cortex-black rounded-2xl rounded-tl-none"
+                  ? "rounded-2xl rounded-tr-none"
+                  : "rounded-2xl rounded-tl-none"
               }`}
+              style={{
+                backgroundColor: msg.sender === "user" ? colors.bgGray : colors.cream,
+                color: colors.black
+              }}
             >
               {msg.text}
             </div>
+
           </div>
         ))}
       </div>
@@ -229,3 +230,4 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
     </div>
   );
 };
+

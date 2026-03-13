@@ -1,6 +1,6 @@
 import { X, FileText, Image as ImageIcon, Upload, Check, Trash2 } from "lucide-react";
 import { useState, useRef } from "react";
-import { CHAT_CONFIG } from "@/config/app-config";
+import { useChat } from "./context/ChatContext";
 
 interface ChangeRequestDetailsProps {
   requestId: string;
@@ -10,7 +10,8 @@ interface ChangeRequestDetailsProps {
 }
 
 export const ChangeRequestDetails = ({ requestId, onClose, onCancel, onSubmit }: ChangeRequestDetailsProps) => {
-  const { changeRequests, style, colors, content } = CHAT_CONFIG;
+  const { config } = useChat();
+  const { changeRequests, style, colors, content } = config;
   const request = changeRequests.find((r) => r.id === requestId) || changeRequests[0];
   const { detailsModal } = style;
 
@@ -204,7 +205,8 @@ export const ChangeRequestDetails = ({ requestId, onClose, onCancel, onSubmit }:
           </button>
           <button
             onClick={() => onSubmit({ reply, files: selectedFiles })}
-            className="w-full py-3.5 rounded-xl bg-cortex-button-gradient text-white text-[18px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
+            className="w-full py-3.5 rounded-xl text-white text-[18px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
+            style={{ background: style.gradients.button }}
           >
             {content.details.actions.submit}
           </button>
@@ -213,4 +215,5 @@ export const ChangeRequestDetails = ({ requestId, onClose, onCancel, onSubmit }:
     </div>
   );
 };
+
 

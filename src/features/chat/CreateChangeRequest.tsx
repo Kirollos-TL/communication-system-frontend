@@ -1,6 +1,6 @@
 import { X, Upload, Check, Trash2 } from "lucide-react";
 import { useState, useRef } from "react";
-import { CHAT_CONFIG } from "@/config/app-config";
+import { useChat } from "./context/ChatContext";
 
 interface CreateChangeRequestProps {
   onClose: () => void;
@@ -8,17 +8,12 @@ interface CreateChangeRequestProps {
   onSubmit: (data: { tags: string[]; details: string; files: File[] }) => void;
 }
 
-const MODIFICATION_TAGS = [
-  "Frontend", "Backend Logic", "Database", "Integration", 
-  "API Modification", "Bug Fix", "Performance Improvement", 
-  "Security Update", "Add New Feature", "Custom Business Logic"
-];
-
 export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChangeRequestProps) => {
-  const { style, colors } = CHAT_CONFIG;
+  const { config } = useChat();
+  const { style, colors, content, modificationTags } = config;
   const { detailsModal } = style;
   
-  const [selectedTags, setSelectedTags] = useState<string[]>(["Frontend", "Backend Logic", "Integration", "Add New Feature"]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(modificationTags.slice(0, 4));
   const [details, setDetails] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,7 +52,7 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: colors.border }}>
           <h2 className="text-[20px] sm:text-[24px] font-medium truncate pr-4" style={{ color: colors.primaryText }}>
-            Create Change Request
+            {content.details.title}
           </h2>
           <button
             onClick={onClose}
@@ -73,15 +68,15 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
           <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-[17px] sm:text-[20px] font-medium" style={{ color: colors.primaryText }}>
-                What would you like to modify?
+                {content.details.sections.modifyPrompt}
               </h3>
               <button className="text-[15px] sm:text-[17px] font-medium opacity-50 hover:opacity-100 transition-opacity" style={{ color: colors.primaryText }}>
-                See all
+                {content.details.sections.seeAll}
               </button>
             </div>
             
             <div className="flex flex-wrap gap-2 sm:gap-2.5">
-              {MODIFICATION_TAGS.map((tag) => {
+              {modificationTags.map((tag) => {
                 const isSelected = selectedTags.includes(tag);
                 return (
                   <button
@@ -109,12 +104,12 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
           {/* Change Details */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="text-[17px] sm:text-[20px] font-medium" style={{ color: colors.primaryText }}>
-              Change Details
+              {content.details.sections.requestedChanges}
             </h3>
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              placeholder="Explain the changes you would like to make..."
+              placeholder={content.details.placeholders.changes}
               className="w-full h-32 sm:h-40 rounded-2xl p-4 sm:p-6 outline-none resize-none text-[15px] sm:text-[16px] font-medium"
               style={{ 
                 backgroundColor: colors.bgGray, 
@@ -124,11 +119,12 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
             />
           </div>
 
+
           {/* Upload files */}
           <div className="space-y-3 sm:space-y-4 pb-2">
             <h3 className="text-[17px] sm:text-[20px] font-medium flex items-center gap-2" style={{ color: colors.primaryText }}>
               <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
-              Upload files
+              {content.details.sections.upload}
             </h3>
             <div 
               className="border-2 border-dashed rounded-[20px] sm:rounded-[24px] p-6 sm:p-10 flex flex-col items-center justify-center gap-3 sm:gap-4 border-slate-200" 
@@ -147,14 +143,14 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
                 style={{ color: colors.primaryText }}
               >
                 <Upload className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
-                Upload files
+                {content.details.upload.btn}
               </button>
               <div className="text-center">
                 <p className="text-[15px] sm:text-[18px] font-semibold" style={{ color: colors.primaryText }}>
-                  Chose a file or drag & drop it here
+                  {content.details.upload.prompt}
                 </p>
                 <p className="text-[12px] sm:text-[14px] font-medium opacity-50" style={{ color: colors.primaryText }}>
-                  Maximum 500 MB file size
+                  {content.details.upload.limit}
                 </p>
               </div>
             </div>
@@ -190,17 +186,19 @@ export const CreateChangeRequest = ({ onClose, onCancel, onSubmit }: CreateChang
             className="w-full py-3 rounded-xl font-bold text-[16px] sm:text-[18px] hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
             style={{ backgroundColor: colors.bgGray, color: '#2B3D55' }}
           >
-            Cancel
+            {content.details.actions.cancel}
           </button>
           <button
             onClick={() => onSubmit({ tags: selectedTags, details, files: selectedFiles })}
-            className="w-full py-3 rounded-xl bg-cortex-button-gradient text-white text-[16px] sm:text-[18px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
+            className="w-full py-3 rounded-xl text-white text-[16px] sm:text-[18px] font-bold hover:brightness-95 transition-all shadow-md active:scale-[0.98]"
+            style={{ background: style.gradients.button }}
           >
-            Submit Request
+            {content.details.actions.submit}
           </button>
         </div>
       </div>
     </div>
   );
 };
+
 

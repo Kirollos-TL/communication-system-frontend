@@ -1,5 +1,5 @@
-import { X, ArrowLeft, Settings2 } from "lucide-react";
-import { CHAT_CONFIG } from "@/config/app-config";
+import { X, ArrowLeft } from "lucide-react";
+import { useChat } from "./context/ChatContext";
 
 interface RequestChangeModalProps {
   onClose: () => void;
@@ -9,7 +9,8 @@ interface RequestChangeModalProps {
 }
 
 export const RequestChangeModal = ({ onClose, onCancel, onSubmit, onChatWithUs }: RequestChangeModalProps) => {
-  const { purchasedModules, colors, content } = CHAT_CONFIG;
+  const { config } = useChat();
+  const { purchasedModules, colors, content, style } = config;
 
   return (
     <div className="flex flex-col h-full bg-background animate-in fade-in duration-300 relative">
@@ -34,10 +35,10 @@ export const RequestChangeModal = ({ onClose, onCancel, onSubmit, onChatWithUs }
       <div className="px-6 mt-2 mb-6 flex items-center justify-between text-left shrink-0">
         <div className="space-y-0.5">
           <h2 className="text-[22px] font-medium leading-none" style={{ color: colors.primaryText }}>
-            Request a change
+            {content.userRequestChange.title}
           </h2>
-          <p className="text-[14px] text-muted-foreground">
-            Please select one of your purchased modules
+          <p className="text-[14px] text-muted-foreground mt-1">
+            {content.userRequestChange.subtitle}
           </p>
         </div>
       </div>
@@ -66,7 +67,7 @@ export const RequestChangeModal = ({ onClose, onCancel, onSubmit, onChatWithUs }
                 className="w-full py-2.5 rounded-[10px] text-base font-bold hover:brightness-95 transition-all shadow-sm"
                 style={{ backgroundColor: colors.cream, color: colors.black }}
               >
-                Change Request
+                {content.userRequestChange.actions.continue}
               </button>
             </div>
           ))}
@@ -75,13 +76,15 @@ export const RequestChangeModal = ({ onClose, onCancel, onSubmit, onChatWithUs }
         <div className="mt-auto pt-4 shrink-0 px-1 border-t border-slate-100">
           <button
             onClick={onChatWithUs}
-            className="w-full py-3.5 px-4 rounded-[14px] bg-cortex-button-gradient text-white text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.99]"
+            className="w-full py-3.5 px-4 rounded-[14px] text-white text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.99]"
+            style={{ background: style.gradients.button }}
           >
-            Chat with us
+            {content.welcome.chatBtn}
           </button>
         </div>
       </div>
     </div>
   );
 };
+
 

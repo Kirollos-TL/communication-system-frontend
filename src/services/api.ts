@@ -1,14 +1,22 @@
-import { APP_CONFIG } from "@/config/app-config";
+import { APP_CONFIG, ApiConfig } from "@/config/app-config";
 
 /**
- * A basic API client using the centralized configuration
+ * A configurable API client
  */
-export const apiClient = {
-  baseUrl: APP_CONFIG.api.baseUrl,
+export class ApiClient {
+  private config: ApiConfig;
+
+  constructor(config: ApiConfig = APP_CONFIG.api) {
+    this.config = config;
+  }
+
+  get baseUrl(): string {
+    return this.config.baseUrl;
+  }
 
   getEndpoint(page: "home" | "support", endpoint: string, params: Record<string, string | number> = {}): string {
-    const pageVal = APP_CONFIG.api.pageEndpoints[page];
-    let resolvedEndpoint = APP_CONFIG.api.endpoints[endpoint] || endpoint;
+    const pageVal = this.config.pageEndpoints[page];
+    let resolvedEndpoint = this.config.endpoints[endpoint] || endpoint;
     
     // Replace {page} placeholder
     resolvedEndpoint = resolvedEndpoint.replace("{page}", pageVal);
@@ -19,8 +27,7 @@ export const apiClient = {
     });
     
     return resolvedEndpoint;
-  },
-
+  }
 
   async get<T>(page: "home" | "support", endpoint: string, params: Record<string, string | number> = {}): Promise<T> {
     const fullPath = this.getEndpoint(page, endpoint, params);
@@ -29,7 +36,7 @@ export const apiClient = {
       throw new Error(`API error: ${response.statusText}`);
     }
     return response.json();
-  },
+  }
 
   async post<T>(page: "home" | "support", endpoint: string, data: unknown, params: Record<string, string | number> = {}): Promise<T> {
     const fullPath = this.getEndpoint(page, endpoint, params);
@@ -44,7 +51,11 @@ export const apiClient = {
       throw new Error(`API error: ${response.statusText}`);
     }
     return response.json();
-  },
-};
+  }
+}
+
+// Export a singleton instance with default config for backward compatibility
+export const apiClient = new ApiClient();
 
 export default apiClient;
+

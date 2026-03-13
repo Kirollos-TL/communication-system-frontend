@@ -1,7 +1,7 @@
 import { X, ArrowLeft, MessageSquare, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
-import { CHAT_CONFIG } from "@/config/app-config";
-import { chatService, UserChat } from "@/services/chat-service";
+import { UserChat } from "@/services/chat-service";
+import { useChat } from "./context/ChatContext";
 
 interface ChatFollowUpProps {
   onClose: () => void;
@@ -13,7 +13,8 @@ interface ChatFollowUpProps {
 }
 
 export const ChatFollowUp = ({ onClose, onBack, onOptionSelect, onChatSelect, onChatWithUs, mode = "options" }: ChatFollowUpProps) => {
-  const { style, followUpOptions, colors, content, user } = CHAT_CONFIG;
+  const { config, chatService } = useChat();
+  const { style, followUpOptions, colors, content, user } = config;
   const [chats, setChats] = useState<UserChat[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,8 +22,7 @@ export const ChatFollowUp = ({ onClose, onBack, onOptionSelect, onChatSelect, on
     const fetchChats = async () => {
       setIsLoading(true);
       try {
-        // Fetch chats for user ID 0 as requested
-        const data = await chatService.getUserChats(0);
+        const data = await chatService.getUserChats(user.id);
         setChats(data);
       } catch (error) {
         console.error("Failed to fetch user chats:", error);
@@ -31,7 +31,8 @@ export const ChatFollowUp = ({ onClose, onBack, onOptionSelect, onChatSelect, on
       }
     };
     fetchChats();
-  }, []);
+  }, [user.id, chatService]);
+
 
   return (
     <div className="flex flex-col h-full bg-background animate-in fade-in duration-300 text-left">
@@ -127,7 +128,8 @@ export const ChatFollowUp = ({ onClose, onBack, onOptionSelect, onChatSelect, on
         <div className="mt-auto pt-6 shrink-0">
           <button
             onClick={onChatWithUs}
-            className="w-full py-3.5 px-4 rounded-[14px] bg-cortex-button-gradient text-white text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-lg active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 rounded-[14px] text-white text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-lg active:scale-[0.99] flex items-center justify-center gap-2"
+            style={{ background: style.gradients.button }}
           >
             {content.welcome.chatBtn}
           </button>
@@ -136,3 +138,4 @@ export const ChatFollowUp = ({ onClose, onBack, onOptionSelect, onChatSelect, on
     </div>
   );
 };
+

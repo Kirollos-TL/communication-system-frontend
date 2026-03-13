@@ -7,20 +7,20 @@ import { ChangeRequestList } from "./ChangeRequestList";
 import { ChangeRequestDetails } from "./ChangeRequestDetails";
 import { CreateChangeRequest } from "./CreateChangeRequest";
 import { RequestChangeModal } from "./RequestChangeModal";
-import { CHAT_CONFIG, Faq } from "@/config/app-config";
-import { chatService } from "@/services/chat-service";
+import { Faq, ChatConfig } from "@/config/app-config";
+import { ChatProvider } from "./context/ChatProvider";
+import { useChat } from "./context/ChatContext";
 
 export type ChatView = "closed" | "welcome" | "follow-up" | "change-requests" | "change-request-details" | "user-request-change" | "create-change-request" | "chat";
-
-
 
 interface ChatWidgetProps {
   role?: "dev" | "user";
   currentPage?: "home" | "support";
+  config?: Partial<ChatConfig>;
 }
 
-const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => {
-
+const ChatWidgetContent = () => {
+  const { config, role, chatService } = useChat();
   const [view, setView] = useState<ChatView>("closed");
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
@@ -28,15 +28,15 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
   const [selectedChatId, setSelectedChatId] = useState<string | undefined>();
   const [followUpMode, setFollowUpMode] = useState<"options" | "history">("options");
 
-  const { layout, animations } = CHAT_CONFIG;
+  const { layout, animations, user, style } = config;
 
   const handleChatSelect = (chatId: string) => {
+
     setSelectedChatId(chatId);
     setSelectedOption("");
     setSelectedAnswer("");
     setView("chat");
   };
-
 
   const handleOptionSelect = async (option: string | Faq) => {
     const questionText = typeof option === "string" ? option : option.question;
@@ -50,7 +50,7 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
     }
 
     try {
-      const newChat = await chatService.createChat(CHAT_CONFIG.user.id, questionText);
+      const newChat = await chatService.createChat(user.id, questionText);
       setSelectedChatId(newChat.chat_id);
     } catch (error) {
       console.error("Failed to create chat for FAQ:", error);
@@ -67,9 +67,6 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
     }
   };
 
-
-
-
   const handleRequestChange = () => {
     if (role === "dev") {
       setView("change-requests");
@@ -78,27 +75,22 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
     }
   };
 
-
   const handleChatWithUs = async () => {
     setSelectedOption("");
     setSelectedAnswer("");
     try {
-      const newChat = await chatService.createChat(CHAT_CONFIG.user.id, "General Support");
+      const newChat = await chatService.createChat(user.id, config.content.welcome.chatBtn);
       setSelectedChatId(newChat.chat_id);
     } catch (error) {
        console.error("Failed to create chat session:", error);
-       // We still show the chat view even if backend fail, it will just be local-only
     }
     setView("chat");
   };
-
 
   const handleFollowRequest = () => {
     setFollowUpMode("options");
     setView("follow-up");
   };
-
-
 
   return (
     <div 
@@ -127,7 +119,6 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
             />
           )}
           {view === "follow-up" && (
-
             <ChatFollowUp
               onClose={() => setView("closed")}
               onBack={() => setView("welcome")}
@@ -142,7 +133,6 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
               onClose={() => setView("closed")}
               onBack={() => setView("follow-up")}
               onViewRequest={(id) => {
-
                 setSelectedRequestId(id);
                 setView("change-request-details");
               }}
@@ -206,12 +196,11 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
         </div>
       )}
 
-
       {view === "closed" && (
-
         <button
           onClick={() => setView("welcome")}
-          className={`${layout.bubbleWidth} ${layout.bubbleHeight} pt-1 rounded-xl bg-cortex-header-gradient shadow-lg flex items-center justify-center  transition-transform ${layout.zIndex.bubble}`}
+          className={`${layout.bubbleWidth} ${layout.bubbleHeight} pt-1 rounded-xl shadow-lg flex items-center justify-center transition-transform ${layout.zIndex.bubble}`}
+          style={{ background: style.gradients.header }}
         >
           <img src={ChatIcon} alt="Chat" className="w-9 h-9" />
         </button>
@@ -220,4 +209,13 @@ const ChatWidget = ({ role = "dev", currentPage = "home" }: ChatWidgetProps) => 
   );
 };
 
+export const ChatWidget = ({ role = "dev", currentPage = "home", config }: ChatWidgetProps) => {
+  return (
+    <ChatProvider role={role} currentPage={currentPage} config={config}>
+      <ChatWidgetContent />
+    </ChatProvider>
+  );
+};
+
 export default ChatWidget;
+

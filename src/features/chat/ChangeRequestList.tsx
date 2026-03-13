@@ -1,6 +1,6 @@
 import { X, ArrowLeft, Settings2, Check } from "lucide-react";
 import { useState, useMemo } from "react";
-import { CHAT_CONFIG } from "@/config/app-config";
+import { useChat } from "./context/ChatContext";
 
 interface ChangeRequestListProps {
   onClose: () => void;
@@ -10,17 +10,18 @@ interface ChangeRequestListProps {
 }
 
 export const ChangeRequestList = ({ onClose, onBack, onViewRequest, onChatWithUs }: ChangeRequestListProps) => {
-  const { changeRequests, colors, content } = CHAT_CONFIG;
+  const { config } = useChat();
+  const { changeRequests, colors, content, statusFilters, style } = config;
 
-  const [filterStatus, setFilterStatus] = useState<string>("All");
+  const [filterStatus, setFilterStatus] = useState<string>(statusFilters.all);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const filteredRequests = useMemo(() => {
-    if (filterStatus === "All") return changeRequests;
+    if (filterStatus === statusFilters.all) return changeRequests;
     return changeRequests.filter(r => r.status === filterStatus);
-  }, [changeRequests, filterStatus]);
+  }, [changeRequests, filterStatus, statusFilters.all]);
 
-  const statuses = ["All", ...new Set(changeRequests.map(r => r.status))];
+  const statuses = useMemo(() => [statusFilters.all, ...new Set(changeRequests.map(r => r.status))], [changeRequests, statusFilters.all]);
 
   return (
     <div className="flex flex-col h-full bg-background animate-in fade-in duration-300 relative">
@@ -54,7 +55,6 @@ export const ChangeRequestList = ({ onClose, onBack, onViewRequest, onChatWithUs
           >
             <Settings2 className="w-5 h-5" />
           </button>
-
 
           {/* Filter Dropdown */}
           {isFilterOpen && (
@@ -121,7 +121,7 @@ export const ChangeRequestList = ({ onClose, onBack, onViewRequest, onChatWithUs
             ))
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-10">
-              <p>No results for "{filterStatus}"</p>
+              <p>{statusFilters.noResults} "{filterStatus}"</p>
             </div>
           )}
         </div>
@@ -129,7 +129,8 @@ export const ChangeRequestList = ({ onClose, onBack, onViewRequest, onChatWithUs
         <div className="mt-auto pt-4 shrink-0 px-1 border-t border-slate-100">
           <button
             onClick={onChatWithUs}
-            className="w-full py-3.5 px-4 rounded-[14px] bg-cortex-button-gradient text-white text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.99]"
+            className="w-full py-3.5 px-4 rounded-[14px] text-white text-[18px] hover:text-cortex-cream font-semibold transition-all shadow-md active:scale-[0.99]"
+            style={{ background: style.gradients.button }}
           >
             {content.welcome.chatBtn}
           </button>
@@ -146,4 +147,6 @@ export const ChangeRequestList = ({ onClose, onBack, onViewRequest, onChatWithUs
     </div>
   );
 };
+
+
 

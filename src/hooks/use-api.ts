@@ -1,36 +1,34 @@
 import { useMemo } from "react";
-import { useLocation } from "react-router-dom";
-import { apiClient } from "@/services/api";
-import { APP_CONFIG } from "@/config/app-config";
+import { useChat } from "@/features/chat/context/ChatContext";
 
 /**
  * A custom hook that provides a page-aware API client.
  * It automatically uses the current route to determine the backend endpoint.
  */
 export const useApi = () => {
-  const location = useLocation();
-  const userId = APP_CONFIG.chat.user.id;
+  const { config, currentPage: contextPage, apiClient } = useChat();
   
-  // Map current route to page type
-  const currentPage: "home" | "support" = location.pathname === "/support" ? "support" : "home";
+  // Use window.location for broad compatibility
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : "/";
+  const userId = config.user.id;
+  const currentPage = contextPage;
 
   return useMemo(() => ({
     currentPage,
     userId,
-    route: location.pathname,
+    route: pathname,
     get: <T>(endpoint: string, params: Record<string, string | number> = {}) => 
       apiClient.get<T>(currentPage, endpoint, { user_id: userId, ...params }),
     post: <T>(endpoint: string, data: unknown, params: Record<string, string | number> = {}) => {
-      // If data is an object, automatically inject the route
       const payload = typeof data === 'object' && data !== null 
-        ? { ...data, route: location.pathname } 
+        ? { ...data, route: pathname } 
         : data;
       return apiClient.post<T>(currentPage, endpoint, payload, { user_id: userId, ...params });
     },
-  }), [currentPage, location.pathname, userId]);
+  }), [currentPage, pathname, userId, apiClient]);
 };
 
-
-
-
 export default useApi;
+
+
+

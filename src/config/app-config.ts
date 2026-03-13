@@ -65,6 +65,11 @@ export interface ChatConfig {
       height: string;
       borderRadius: string;
     };
+    gradients: {
+      header: string;
+      button: string;
+      icon: string;
+    };
   };
   colors: {
     [key: string]: string;
@@ -88,6 +93,9 @@ export interface ChatConfig {
       title: string;
       labels: Record<string, string>;
       sections: Record<string, string>;
+      placeholders: {
+        changes: string;
+      };
       upload: {
         prompt: string;
         limit: string;
@@ -133,10 +141,16 @@ export interface ChatConfig {
     requestedChanges: string;
     attachments: { name: string; size: string; type: string }[];
   }[];
+  modificationTags: string[];
+  statusFilters: {
+    all: string;
+    noResults: string;
+  };
   animations: {
     entryTransition: string;
   };
   purchasedModules: PurchasedModule[];
+  api: ApiConfig;
 }
 
 export interface AppConfig {
@@ -170,8 +184,8 @@ export const APP_CONFIG: AppConfig = {
 
 
   general: {
-    appName: "Cortex Communication System",
-    supportEmail: "support@cortex.com",
+    appName: "Communication System",
+    supportEmail: "support@gmail.com",
   },
   
   // Chat configuration moved from feature specific folder to general config
@@ -199,6 +213,11 @@ export const APP_CONFIG: AppConfig = {
         width: "800px",
         height: "733px",
         borderRadius: "24px",
+      },
+      gradients: {
+        header: "linear-gradient(360deg, #DDD8BB -68.13%, #858B89 15.94%, #37475C 100%)",
+        button: "linear-gradient(270deg, #DDD8BB 0%, #858B89 50%, #37475C 100%)",
+        icon: "linear-gradient(90deg, #DBD6BA 0%, #949791 15.87%, #3A495E 68.27%)",
       }
     },
 
@@ -247,6 +266,11 @@ export const APP_CONFIG: AppConfig = {
           attachments: "Attachments",
           reply: "Reply to the client",
           upload: "Upload files",
+          modifyPrompt: "What would you like to modify?",
+          seeAll: "See all",
+        },
+        placeholders: {
+          changes: "Explain the changes you would like to make...",
         },
         upload: {
           prompt: "Chose a file or drag & drop it here",
@@ -297,6 +321,17 @@ export const APP_CONFIG: AppConfig = {
       "complaint",
     ],
 
+    modificationTags: [
+      "Frontend", "Backend Logic", "Database", "Integration", 
+      "API Modification", "Bug Fix", "Performance Improvement", 
+      "Security Update", "Add New Feature", "Custom Business Logic"
+    ],
+
+    statusFilters: {
+      all: "All",
+      noResults: "No results for",
+    },
+
 
     changeRequests: [
       {
@@ -346,9 +381,24 @@ export const APP_CONFIG: AppConfig = {
     // Animation settings
     animations: {
       entryTransition: "animate-in slide-in-from-bottom-4 fade-in duration-300",
+    },
+    api: {
+      baseUrl: "/api/v1",
+      endpoints: {
+        faqs: "/page/{page}/faqs",
+        user_chats: "/user_chats/{user_id}",
+        user_chat: "/user_chat/{user_id}/{chat_id}",
+        user_messages: "/user_message/{user_id}/{chat_id}",
+        create_message: "/user_message",
+        create_user_chat: "/user_chat",
+      },
+      pageEndpoints: {
+        home: "home",
+        support: "support",
+      }
     }
   }
 };
 
 export default APP_CONFIG;
-export const CHAT_CONFIG = APP_CONFIG.chat;
+export const CHAT_CONFIG: ChatConfig = APP_CONFIG.chat;
