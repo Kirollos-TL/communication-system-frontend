@@ -51,8 +51,6 @@ Start the local Vite development server:
 npm run dev
 ```
 
-The application will be accessible at http://localhost:5173.
-
 ### Building for Production
 
 To create a production-ready build:
