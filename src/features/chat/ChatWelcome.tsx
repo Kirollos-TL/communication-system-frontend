@@ -62,11 +62,13 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
 
       {/* Options */}
       <div className="flex-1 px-5 pt-4 sm:pt-5 pb-6 sm:pb-8 flex flex-col min-h-0">
-        <div className="flex items-center justify-between mb-3 sm:mb-4 shrink-0">
-          <p className="text-sm text-muted-foreground">Please select an option below</p>
+        <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4 shrink-0 px-1">
+          <p className="text-[14px] sm:text-[16px] text-muted-foreground truncate flex-1">
+            Please select an option below
+          </p>
           <button 
             onClick={onRequestChange}
-            className="px-4 py-1.5 rounded-[10px] bg-cortex-button-gradient text-white text-[13px] font-medium transition-all shadow-sm active:scale-95 hover:brightness-110"
+            className="px-2 sm:px-4 py-2 rounded-[12px] bg-cortex-button-gradient text-white text-[12px] sm:text-[14px] font-semibold transition-all shadow-sm active:scale-95 hover:text-cortex-cream"
           >
             Request a change
           </button>

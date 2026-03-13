@@ -298,9 +298,50 @@ export const APP_CONFIG: AppConfig = {
     ],
 
 
-    changeRequests: [],
+    changeRequests: [
+      {
+        id: "1",
+        userName: "Ahmed Waleed",
+        module: "Inventory Management",
+        purchasedDate: "12 Mar 2025",
+        status: "In progress",
+        statusColor: "#9C6F46",
+        requestedChanges: "The client requested additional reporting features in the inventory module...",
+        attachments: [
+          { name: "requirements.pdf", size: "20 MB", type: "pdf" },
+          { name: "screenshot.png", size: "20 MB", type: "png" },
+        ]
+      },
+      {
+        id: "2",
+        userName: "Ahmed Waleed",
+        module: "Inventory Management",
+        purchasedDate: "12 Mar 2025",
+        status: "Completed",
+        statusColor: "#00642F",
+        requestedChanges: "Implemented custom export to excel functionality.",
+        attachments: [
+          { name: "final_report.pdf", size: "15 MB", type: "pdf" },
+        ]
+      },
+      {
+        id: "3",
+        userName: "Ahmed Waleed",
+        module: "Inventory Management",
+        purchasedDate: "12 Mar 2025",
+        status: "In progress",
+        statusColor: "#9C6F46",
+        requestedChanges: "Add support for multiple warehouses.",
+        attachments: []
+      },
+    ],
 
-    purchasedModules: [],
+    purchasedModules: [
+      { id: "1", name: "Inventory Management", purchaseDate: "12 Mar 2025" },
+      { id: "2", name: "Inventory Management", purchaseDate: "12 Mar 2025" },
+      { id: "3", name: "Inventory Management", purchaseDate: "12 Mar 2025" },
+      { id: "4", name: "Inventory Management", purchaseDate: "12 Mar 2025" },
+    ],
 
     // Animation settings
     animations: {
