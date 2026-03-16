@@ -127,10 +127,10 @@ export interface ChatConfig {
       };
     };
   };
-  roles: {
-    dev: string;
-    user: string;
-  };
+  roles: Record<string, string>;
+  rolePermissions: Record<string, {
+    requestChangeView: string;
+  }>;
   user: {
     id: number;
     name: string;
@@ -313,6 +313,10 @@ export const APP_CONFIG: AppConfig = {
     roles: {
       dev: "dev",
       user: "user",
+    },
+    rolePermissions: {
+      dev: { requestChangeView: "change-requests" },
+      user: { requestChangeView: "user-request-change" },
     },
 
     // Content & Persona

@@ -6,7 +6,7 @@ import { ChatContext } from './ChatContext';
 
 export const ChatProvider: React.FC<{
   config?: Partial<ChatConfig>;
-  role?: 'dev' | 'user';
+  role?: string;
   currentPage?: string;
   children: React.ReactNode;
 }> = ({ config, role = 'dev', currentPage = 'home', children }) => {

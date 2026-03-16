@@ -6,7 +6,7 @@ import { useApi } from "@/hooks/use-api";
 import { useChat } from "./context/ChatContext";
 
 interface ChatWelcomeProps {
-  role: "dev" | "user";
+  role: string;
   onClose: () => void;
   onOptionSelect: (faq: Faq | string) => void;
   onRequestChange: () => void;

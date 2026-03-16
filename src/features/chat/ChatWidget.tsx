@@ -14,7 +14,7 @@ import { useChat } from "./context/ChatContext";
 export type ChatView = "closed" | "welcome" | "follow-up" | "change-requests" | "change-request-details" | "user-request-change" | "create-change-request" | "chat";
 
 interface ChatWidgetProps {
-  role?: "dev" | "user";
+  role?: string;
   currentPage?: string;
   config?: Partial<ChatConfig>;
 }
@@ -83,11 +83,8 @@ const ChatWidgetContent = () => {
   };
 
   const handleRequestChange = () => {
-    if (role === "dev") {
-      setView("change-requests");
-    } else {
-      setView("user-request-change");
-    }
+    const nextView = config.rolePermissions[role]?.requestChangeView || "user-request-change";
+    setView(nextView as ChatView);
   };
 
   const handleChatWithUs = async () => {
@@ -188,8 +185,8 @@ const ChatWidgetContent = () => {
               requestId={selectedRequestId}
               onClose={() => setView("closed")}
               onCancel={() => {
-                if (role === "user") setView("user-request-change");
-                else setView("change-requests");
+                const backView = config.rolePermissions[role]?.requestChangeView || "user-request-change";
+                setView(backView as ChatView);
               }}
               onSubmit={() => {
                 setSelectedOption(`I'm submitting changes for request #${selectedRequestId}`);
