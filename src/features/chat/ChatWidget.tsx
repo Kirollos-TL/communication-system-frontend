@@ -132,6 +132,10 @@ const ChatWidgetContent = () => {
               onRequestChange={handleRequestChange}
               onChatWithUs={handleChatWithUs}
               onFollowRequest={handleFollowRequest}
+              onHistoryClick={() => {
+                setFollowUpMode("history");
+                setView("follow-up");
+              }}
             />
           )}
           {view === "follow-up" && (
@@ -162,11 +166,6 @@ const ChatWidgetContent = () => {
                 setSelectedChatId(undefined);
               }}
               onClose={() => setView("closed")}
-              onHistoryClick={() => {
-                setSelectedChatId(undefined);
-                setFollowUpMode("history");
-                setView("follow-up");
-              }}
               initialMessage={selectedOption}
               initialAnswer={selectedAnswer}
               chatId={selectedChatId}

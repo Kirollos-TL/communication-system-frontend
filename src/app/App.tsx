@@ -10,7 +10,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/support" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         </Routes>
 
       </BrowserRouter>

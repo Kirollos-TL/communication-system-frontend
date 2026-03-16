@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, MoreVertical } from "lucide-react";
+import { ArrowLeft, History, X } from "lucide-react";
 import VectorIcon from "../../assets/Vector.svg";
 import { useChat } from "./context/ChatContext";
 
@@ -14,7 +14,7 @@ interface Message {
 interface ChatConversationProps {
   onBack: () => void;
   onClose: () => void;
-  onHistoryClick: () => void;
+  onHistoryClick?: () => void;
   initialMessage?: string;
   initialAnswer?: string;
   chatId?: string;
@@ -46,7 +46,6 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
   });
 
   const [input, setInput] = useState("");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -154,7 +153,7 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
   };
 
 
-  const menuOptions = ["Conversation history", "Close chat"];
+
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -162,6 +161,8 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
       sendMessage();
     }
   };
+
+  const isAITyping = !isStatic && messages.length > 0 && messages[messages.length - 1].sender === "user";
 
   return (
     <div className="flex flex-col h-full bg-background font-sans">
@@ -183,34 +184,15 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
             </p>
           )}
         </div>
-        <button 
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="text-white hover:bg-white/10 transition-colors rounded-full p-1.5"
-        >
-          <MoreVertical className="w-5 h-5" />
-        </button>
-
-        {/* Dropdown Menu */}
-        {isMenuOpen && (
-          <div className="absolute top-[calc(100%-8px)] right-4 w-[210px] bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] py-2.5 z-50 animate-in fade-in zoom-in-95 duration-200">
-            {menuOptions.map((option) => (
-              <button
-                key={option}
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  if (option === "Close chat") {
-                    onClose();
-                  } else if (option === "Conversation history") {
-                    onHistoryClick();
-                  }
-                }}
-                className="w-full text-left px-5 py-2.5 text-[15px] text-[#2C3E50] hover:bg-cortex-gray/10 transition-colors"
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/30 transition-colors"
+            title="Close chat"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -246,6 +228,29 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
 
           </div>
         ))}
+        {isAITyping && (
+          <div className="flex flex-col items-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center gap-2 mb-1.5 ml-1">
+              <div className="w-6 h-6 rounded-full bg-cortex-amber/20 flex items-center justify-center text-[10px] font-bold text-cortex-amber">
+                {assistant.name[0]}
+              </div>
+              <span className="text-xs font-medium text-muted-foreground">{assistant.name}</span>
+            </div>
+            <div
+              className="px-4 py-3 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1"
+              style={{
+                backgroundColor: colors.cream,
+                color: colors.black
+              }}
+            >
+              <div className="flex gap-1">
+                <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce"></span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input area */}

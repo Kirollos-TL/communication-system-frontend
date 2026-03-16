@@ -1,4 +1,4 @@
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Faq } from "@/config/app-config";
 import HelloIcon from "../../assets/hello.svg";
@@ -12,9 +12,10 @@ interface ChatWelcomeProps {
   onRequestChange: () => void;
   onChatWithUs: () => void;
   onFollowRequest: () => void;
+  onHistoryClick: () => void;
 }
 
-export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, onChatWithUs, onFollowRequest }: ChatWelcomeProps) => {
+export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, onChatWithUs, onFollowRequest, onHistoryClick }: ChatWelcomeProps) => {
   const { config } = useChat();
   const { style, content } = config;
 
@@ -45,12 +46,20 @@ export const ChatWelcome = ({ role, onClose, onOptionSelect, onRequestChange, on
         className="relative px-6 pt-6 sm:pt-8 pb-8 sm:pb-10 overflow-hidden shrink-0"
         style={{ height: `min(${style.headerHeight}, 25vh)`, minHeight: "130px", background: style.gradients.header }}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/30 transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          <button
+            onClick={onHistoryClick}
+            className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/30 transition-colors"
+          >
+            <History className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/30 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
         <h2 className="text-[22px] sm:text-[24px] font-medium text-white mt-3 sm:mt-5 flex items-center gap-2">
           {content.welcome.title} <img src={HelloIcon} alt="Hello" className="w-5 h-5 opacity-90" />
         </h2>
