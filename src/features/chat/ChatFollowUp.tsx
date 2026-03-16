@@ -23,7 +23,10 @@ export const ChatFollowUp = ({ onClose, onBack, onOptionSelect, onChatSelect, on
       setIsLoading(true);
       try {
         const data = await chatService.getUserChats(user.id);
-        setChats(data);
+        const sortedData = (data || []).sort((a, b) => 
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        );
+        setChats(sortedData);
       } catch (error) {
         console.error("Failed to fetch user chats:", error);
       } finally {

@@ -78,7 +78,7 @@ export class ChatService {
    * Sends a new message for a specific chat
    * POST /api/v1/user_message
    */
-  async sendMessage(userId: number, chatId: string, message: string, sender: 'user' | 'chatbot' | 'support' = 'user'): Promise<UserMessage> {
+  async sendMessage(userId: number, chatId: string, message: string, sender: 'user' | 'chabot' | 'support' = 'user'): Promise<UserMessage> {
     return this.apiClient.post<UserMessage>("home", "create_message", { 
       user_id: userId,
       chat_id: chatId,

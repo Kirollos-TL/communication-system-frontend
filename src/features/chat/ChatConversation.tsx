@@ -49,12 +49,38 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
     if (chatId) {
-      const fetchHistory = async () => {
-        setIsLoading(true);
+      const fetchMessages = async () => {
         try {
           const history = await chatService.getUserMessages(user.id, chatId);
-          
+          if (history.length > 0) {
+            const sortedHistory = [...history].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+            const mappedMessages: Message[] = sortedHistory.map((m) => ({
+              id: m.message_id,
+              text: m.message,
+              sender: m.sender === "user" ? "user" : "other",
+              name: m.sender === "user" ? user.name : assistant.name,
+            }));
+            
+            setMessages(prev => {
+              // Only update state if the backend has same or more messages.
+              // This prevents optimistic local messages from disappearing while the backend is still processing.
+              if (mappedMessages.length >= prev.length) {
+                return mappedMessages;
+              }
+              return prev;
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch messages:", error);
+        }
+      };
+
+      const initChat = async () => {
+        setIsLoading(true);
+        try {
           try {
             const chatDetails = await chatService.getChat(user.id, chatId);
             setChatTitle(chatDetails.title);
@@ -62,15 +88,18 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
             console.warn("Could not fetch chat title:", e);
           }
 
+          const history = await chatService.getUserMessages(user.id, chatId);
           if (history.length === 0) {
             if (initialMessage) {
               await chatService.sendMessage(user.id, chatId, initialMessage, 'user');
               if (initialAnswer) {
-                await chatService.sendMessage(user.id, chatId, initialAnswer, 'chatbot');
+                await chatService.sendMessage(user.id, chatId, initialAnswer, 'user');
               }
+              await fetchMessages();
             }
           } else {
-            const mappedMessages: Message[] = history.map((m) => ({
+            const sortedHistory = [...history].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+            const mappedMessages: Message[] = sortedHistory.map((m) => ({
               id: m.message_id,
               text: m.message,
               sender: m.sender === "user" ? "user" : "other",
@@ -84,8 +113,14 @@ export const ChatConversation = ({ onBack, onClose, onHistoryClick, initialMessa
           setIsLoading(false);
         }
       };
-      fetchHistory();
+      
+      initChat();
+
+      // Poll every 3 seconds to get the chatbot's response
+      intervalId = setInterval(fetchMessages, 3000);
     }
+    
+    return () => clearInterval(intervalId);
   }, [chatId, user.id, assistant.name, user.name, initialMessage, initialAnswer, chatService]);
 
   useEffect(() => {
