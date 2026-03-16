@@ -13,7 +13,7 @@ export const useApi = () => {
   const userId = config.user.id;
   const currentPage = contextPage;
 
-  return useMemo(() => ({
+  return useMemo(() => ({ //useMemo to not make api calls on every render. It will only make api calls when the values in the dependency array change.
     currentPage,
     userId,
     route: pathname,
