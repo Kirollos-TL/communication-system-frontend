@@ -176,7 +176,7 @@ export interface AppConfig {
 export const APP_CONFIG: AppConfig = {
 
   api: {
-    baseUrl: "/api/v1",
+    baseUrl: import.meta.env.VITE_API_BASE_URL || "/api/v1",
 
     endpoints: {
       faqs: "/page/{page}/faqs",
@@ -200,8 +200,8 @@ export const APP_CONFIG: AppConfig = {
 
 
   general: {
-    appName: "Communication System",
-    supportEmail: "support@gmail.com",
+    appName: import.meta.env.VITE_APP_NAME || "Communication System",
+    supportEmail: import.meta.env.VITE_SUPPORT_EMAIL || "support@gmail.com",
   },
   
   // Chat configuration moved from feature specific folder to general config
@@ -403,7 +403,7 @@ export const APP_CONFIG: AppConfig = {
       entryTransition: "animate-in slide-in-from-bottom-4 fade-in duration-300",
     },
     api: {
-      baseUrl: "/api/v1",
+      baseUrl: import.meta.env.VITE_API_BASE_URL || "/api/v1",
       endpoints: {
         faqs: "/page/{page}/faqs",
         user_chats: "/user_chats/{user_id}",
