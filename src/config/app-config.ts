@@ -138,8 +138,6 @@ export interface ChatConfig {
 
   assistant: {
     name: string;
-    defaultResponse: string;
-    arabicResponse: string;
   };
   followUpOptions: string[];
   changeRequests: {
@@ -321,15 +319,13 @@ export const APP_CONFIG: AppConfig = {
 
     // Content & Persona
     user: {
-      id: 0,
-      name: "Ahmed",
+      id: parseInt(import.meta.env.VITE_DEFAULT_USER_ID || "0"),
+      name: import.meta.env.VITE_DEFAULT_USER_NAME || "Ahmed",
     },
 
     
     assistant: {
-      name: "Assistant",
-      defaultResponse: "Great question! Let me look into that for you.",
-      arabicResponse: "أكيد طبعا اتفضل",
+      name: import.meta.env.VITE_ASSISTANT_NAME || "Assistant",
     },
 
     followUpOptions: [

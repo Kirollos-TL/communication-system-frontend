@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       host: "::",
-      port: 8081,
+      port: parseInt(env.VITE_PORT || "8081"),
       hmr: {
         overlay: false,
       },
