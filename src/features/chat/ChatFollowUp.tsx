@@ -1,5 +1,5 @@
-import { X, ArrowLeft, MessageSquare, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { X, ArrowLeft, MessageSquare, Clock, Trash2, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import { UserChat } from "@/services/chat-service";
 import { useChat } from "./context/ChatContext";
 
@@ -17,24 +17,42 @@ export const ChatFollowUp = ({ onClose, onBack, onOptionSelect, onChatSelect, on
   const { style, followUpOptions, colors, content, user } = config;
   const [chats, setChats] = useState<UserChat[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  const fetchChats = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await chatService.getUserChats(user.id);
+      const sortedData = (data || []).sort((a, b) => 
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
+      setChats(sortedData);
+    } catch (error) {
+      console.error("Failed to fetch user chats:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user.id, chatService]);
 
   useEffect(() => {
-    const fetchChats = async () => {
-      setIsLoading(true);
-      try {
-        const data = await chatService.getUserChats(user.id);
-        const sortedData = (data || []).sort((a, b) => 
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-        );
-        setChats(sortedData);
-      } catch (error) {
-        console.error("Failed to fetch user chats:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchChats();
-  }, [user.id, chatService]);
+  }, [fetchChats]);
+
+  const handleDeleteChat = async (e: React.MouseEvent, chatId: string) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this conversation?")) return;
+
+    setIsDeleting(chatId);
+    try {
+      await chatService.deleteChat(user.id, chatId);
+      setChats(prev => prev.filter(c => c.chat_id !== chatId));
+    } catch (error) {
+      console.error("Failed to delete chat:", error);
+      alert("Failed to delete chat. Please try again.");
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
 
   return (
@@ -96,30 +114,43 @@ export const ChatFollowUp = ({ onClose, onBack, onOptionSelect, onChatSelect, on
                  </div>
                ) : chats.length > 0 ? (
                  <div className="space-y-3">
-                   {chats.map((chat) => (
-                     <button
-                      key={chat.chat_id}
-                      onClick={() => onChatSelect(chat.chat_id)}
-                      className="w-full text-left bg-white border border-slate-100 rounded-xl p-4 hover:border-[#2B3D55] hover:bg-blue-50/30 transition-all group shadow-sm"
-                     >
-                       <div className="flex items-start justify-between">
-                         <div className="flex gap-3">
-                           <div className="mt-1 w-8 h-8 rounded-lg bg-cortex-cream flex items-center justify-center shrink-0">
-                             <MessageSquare className="w-4 h-4 text-[#2B3D55]" />
-                           </div>
-                           <div className="min-w-0">
-                             <p className="font-semibold text-[15px] text-[#2B3D55] truncate">
-                               {chat.title}
-                             </p>
-                             <p className="text-xs text-[#737373] mt-0.5 flex items-center">
-                               <Clock className="w-3 h-3 mr-1" />
-                               {new Date(chat.updated_at).toLocaleDateString()}
-                             </p>
-                           </div>
-                         </div>
-                       </div>
-                     </button>
-                   ))}
+                    {chats.map((chat) => (
+                      <div
+                        key={chat.chat_id}
+                        onClick={() => onChatSelect(chat.chat_id)}
+                        className="w-full text-left bg-white border border-slate-100 rounded-xl p-4 hover:border-[#2B3D55] hover:bg-blue-50/30 transition-all group shadow-sm cursor-pointer relative"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex gap-3 min-w-0 pr-8">
+                            <div className="mt-1 w-8 h-8 rounded-lg bg-cortex-cream flex items-center justify-center shrink-0">
+                              <MessageSquare className="w-4 h-4 text-[#2B3D55]" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-[15px] text-[#2B3D55] truncate">
+                                {chat.title}
+                              </p>
+                              <p className="text-xs text-[#737373] mt-0.5 flex items-center">
+                                <Clock className="w-3 h-3 mr-1" />
+                                {new Date(chat.updated_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <button
+                            onClick={(e) => handleDeleteChat(e, chat.chat_id)}
+                            disabled={isDeleting === chat.chat_id}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            title="Delete conversation"
+                          >
+                            {isDeleting === chat.chat_id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                  </div>
                ) : (
                  <p className="text-sm text-slate-400 text-center py-4">No recent chats found.</p>

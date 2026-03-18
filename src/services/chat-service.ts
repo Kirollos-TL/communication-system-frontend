@@ -137,6 +137,17 @@ export class ChatService {
       user_id: userId
     });
   }
+
+  /**
+   * Deletes a chat session for a user
+   * POST /api/v1/user/chats/delete
+   */
+  async deleteChat(userId: number, chatId: string): Promise<{ message: string }> {
+    return this.apiClient.post<{ message: string }>("home", "delete_chat", {
+      user_id: userId,
+      chat_id: chatId
+    });
+  }
 }
 
 // Export a singleton instance with default apiClient for backward compatibility

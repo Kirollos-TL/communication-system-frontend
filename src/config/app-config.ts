@@ -188,6 +188,7 @@ export const APP_CONFIG: AppConfig = {
       escalations: "/escalations",
       escalation_details: "/escalation/{user_id}/{session_id}",
       user_escalations: "/escalation/{user_id}",
+      delete_chat: "/user/chats/delete",
     },
 
     pageEndpoints: {
@@ -407,6 +408,7 @@ export const APP_CONFIG: AppConfig = {
         user_messages: "/user_message/{user_id}/{chat_id}",
         create_message: "/user_message",
         create_user_chat: "/user_chat",
+        delete_chat: "/user/chats/delete",
       },
       pageEndpoints: {
         home: "home",
