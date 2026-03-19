@@ -117,16 +117,37 @@ export interface ChatConfig {
         submit: string;
       };
     };
-    userRequestChange: {
-      title: string;
-      subtitle: string;
-      placeholder: string;
-      actions: {
-        cancel: string;
-        continue: string;
+      userRequestChange: {
+        title: string;
+        subtitle: string;
+        placeholder: string;
+        actions: {
+          cancel: string;
+          continue: string;
+        };
+      };
+      history: {
+        title: string;
+        recentChats: string;
+        noChats: string;
+        actions: {
+          select: string;
+          selectAll: string;
+          deselectAll: string;
+          all: string;
+          undo: string;
+          cancel: string;
+          delete: string;
+        };
+        messages: {
+          chatDeleted: string;
+          chatsDeleted: string;
+          deletedOne: string;
+          deletedMultiple: string;
+          allChatsDeleted: string;
+        };
       };
     };
-  };
   roles: Record<string, string>;
   rolePermissions: Record<string, {
     requestChangeView: string;
@@ -188,7 +209,7 @@ export const APP_CONFIG: AppConfig = {
       escalations: "/escalations",
       escalation_details: "/escalation/{user_id}/{session_id}",
       user_escalations: "/escalation/{user_id}",
-      delete_chat: "/user/chats/delete",
+      delete_chat: "/user_chats/delete",
     },
 
     pageEndpoints: {
@@ -304,8 +325,29 @@ export const APP_CONFIG: AppConfig = {
         actions: {
           cancel: "Cancel",
           continue: "Continue",
-        }
-      }
+        },
+      },
+      history: {
+        title: "Conversation history",
+        recentChats: "Recent Chats",
+        noChats: "No recent chats found.",
+        actions: {
+          select: "Select",
+          selectAll: "Select All",
+          deselectAll: "None",
+          all: "All",
+          undo: "UNDO",
+          cancel: "Cancel",
+          delete: "Delete",
+        },
+        messages: {
+          chatDeleted: "Chat deleted successfully",
+          chatsDeleted: "Chats deleted successfully",
+          deletedOne: "Deleted 1 chat",
+          deletedMultiple: "Deleted {count} chats",
+          allChatsDeleted: "Deleted all chats",
+        },
+      },
     },
 
     // Roles
@@ -408,7 +450,7 @@ export const APP_CONFIG: AppConfig = {
         user_messages: "/user_message/{user_id}/{chat_id}",
         create_message: "/user_message",
         create_user_chat: "/user_chat",
-        delete_chat: "/user/chats/delete",
+        delete_chat: "/user_chats/delete",
       },
       pageEndpoints: {
         home: "home",

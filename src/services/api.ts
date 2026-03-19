@@ -35,7 +35,8 @@ export class ApiClient {
     if (!response.ok) {
       throw new Error(`API error: ${response.statusText}`);
     }
-    return response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : {} as T;
   }
 
   async post<T>(page: string, endpoint: string, data: unknown, params: Record<string, string | number> = {}): Promise<T> {
@@ -50,7 +51,8 @@ export class ApiClient {
     if (!response.ok) {
       throw new Error(`API error: ${response.statusText}`);
     }
-    return response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : {} as T;
   }
 }
 

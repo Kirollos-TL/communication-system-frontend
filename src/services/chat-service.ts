@@ -139,13 +139,13 @@ export class ChatService {
   }
 
   /**
-   * Deletes a chat session for a user
+   * Deletes chat sessions for a user (supports bulk delete)
    * POST /api/v1/user/chats/delete
    */
-  async deleteChat(userId: number, chatId: string): Promise<{ message: string }> {
+  async deleteChats(userId: number, chatIds: string[]): Promise<{ message: string }> {
     return this.apiClient.post<{ message: string }>("home", "delete_chat", {
       user_id: userId,
-      chat_id: chatId
+      chat_ids: chatIds
     });
   }
 }
